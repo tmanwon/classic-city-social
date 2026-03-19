@@ -1,20 +1,20 @@
-# Project_Name_Here
+# UGA & Athens Event Discovery and Review Platform
 
 ## Our Group
-- 
-- 
-- 
--
+- Tillman Won
+- Justin Alexander
+- Yousef Hasan
+- Gerardo Mendoza
 
-- class section (9:55am or 1:15pm)
-- group name 
+- Class Section: 9:55am
+- Group Name: ClassicCitySocial (Group #10)
 
 ---
 ## Splash page
 
 Upload image to `/images/` and link it below:
 
-`![Group Photo](../images/splash-mockup.jpg)`
+`![Splash Page](../images/SplashPage.png)`
 
 
 ---
@@ -23,7 +23,7 @@ Upload image to `/images/` and link it below:
 
 Upload image to `/images/` and link it below:
 
-`![Unauthenticated View](../images/non-authenticated.jpg)`
+`![Unauthenticated View](../images/ViewUnauthenticated.png)`
 
 ---
 
@@ -31,7 +31,7 @@ Upload image to `/images/` and link it below:
 
 Upload image to `/images/` and link it below:
 
-`![Authenticated View](../images/authenticated.jpg)`
+`![Authenticated View](../images/ViewAuthenticated.png)`
 
 
 ---
@@ -40,6 +40,6 @@ Upload image to `/images/` and link it below:
 
 Upload image to `/images/` and link it below:
 
-`![Form View](../images/form-view.jpg)`
+`![Form View](../images/FormView.png)`
 
 ---
