@@ -14,7 +14,7 @@
 
 Upload image to `/images/` and link it below:
 
-`![Splash Page](../images/SplashPage.png)`
+![Splash Page](../images/SplashPage.png)
 
 
 ---
@@ -23,7 +23,7 @@ Upload image to `/images/` and link it below:
 
 Upload image to `/images/` and link it below:
 
-`![Unauthenticated View](../images/ViewUnauthenticated.png)`
+![Unauthenticated View](../images/ViewUnauthenticated.png)
 
 ---
 
@@ -31,7 +31,7 @@ Upload image to `/images/` and link it below:
 
 Upload image to `/images/` and link it below:
 
-`![Authenticated View](../images/ViewAuthenticated.png)`
+![Authenticated View](../images/ViewAuthenticated.png)
 
 
 ---
@@ -40,6 +40,6 @@ Upload image to `/images/` and link it below:
 
 Upload image to `/images/` and link it below:
 
-`![Form View](../images/FormView.png)`
+![Form View](../images/FormView.png)
 
 ---
