@@ -8,14 +8,14 @@ Our team collaboratively designed, developed, and deployed this full-stack web a
 
 ---
 
-## Our Team - Group_Name_Here 
+## Our Team - Athens Event Finders 
 
-| Member Name      | GitHub Username      | Role          |
-|------------------|----------------------|---------------|
-| Justin Alexander |                      | Project Leader  |
-| Gerardo Mendoza  |                      | Project Manager   |
-| Yousef Hasan     |                      | Communication Leader    |
-| Tillman Won      |                      | GitHub Captain |
+| Member Name      | GitHub Username      | Role                |
+|------------------|----------------------|---------------------|
+| Justin Alexander | justin-t-alexander   | Project Leader      |
+| Gerardo Mendoza  | GJMendoza1           | Project Manager     |
+| Yousef Hasan     | yousef-0614          | Communication Leader|
+| Tillman Won      | tmanwon              | GitHub Captain      |
 
 ---
 
