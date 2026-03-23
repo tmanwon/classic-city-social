@@ -1,8 +1,8 @@
 # Weekly Status Report
 
-**Project Name:**  
-**Group Name:**  
-**Project Manager:**  
+**Project Name:**  Classic City Social
+**Group Name:**  Team 10
+**Project Manager:**  Gerardo Mendoza
 
 
 ---
@@ -16,15 +16,16 @@ Upload image to `/images/` and link it below:
 ## Progress Summary - **Week #1:**  Monday, March 16th -  Sunday, March 22nd
 
 ** What we completed this week:**  
-- 
--  
+- Went over the roles and who will have what title.
+- Worked together to complete the figma pages and get the overall design done.
+- Talked about how we will communicate and work together
 
 ** Issues / blockers encountered:**  
 -  
 -  
 
 ** Goals for next week:**  
--  
+-  Continue reading and getting instructions to move along accordingly.
 -  
 
 ---
