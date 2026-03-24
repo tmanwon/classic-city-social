@@ -255,7 +255,7 @@ export default function EventsPage() {
                   <Button
                     onClick={() => router.push('/login')}
                     variant="outline"
-                    className="border-white/30 text-white hover:bg-white/10"
+                    className="border-white/30 text-black hover:bg-white/10 hover:text-white"
                   >
                     Log In
                   </Button>

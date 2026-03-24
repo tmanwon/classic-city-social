@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { Event } from '../data/mockData';
 import { Button } from './ui/button';

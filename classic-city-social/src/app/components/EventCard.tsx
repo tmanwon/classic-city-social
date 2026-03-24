@@ -73,6 +73,7 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
 
         <CardHeader className="pb-3">
           <h3 className="text-xl line-clamp-2">{event.title}</h3>
+          {/* <div className="w-64 justify-start text-neutral-950 text-xl font-[600] font-inter leading-7">{event.title}</div> */}
           <div className="flex items-center gap-4 text-sm text-gray-600 mt-2">
             <div className="flex items-center gap-1">
               <Calendar className="w-4 h-4" />
