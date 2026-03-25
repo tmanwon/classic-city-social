@@ -6,6 +6,7 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { useAuth } from '../context/AuthContext';
 import { generateSentimentSummary } from '../services/api';
+import Image from 'next/image';
 
 interface EventCardProps {
   event: Event;
@@ -46,9 +47,10 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
       <Card className="overflow-hidden h-full flex flex-col hover:shadow-xl transition-shadow">
         {/* Image */}
         <div className="relative h-48 overflow-hidden">
-          <img
+          <Image
             src={event.imageUrl}
             alt={event.title}
+            fill={true}
             className="w-full h-full object-cover"
           />
           <div className="absolute top-3 left-3 flex gap-2">

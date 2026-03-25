@@ -7,6 +7,7 @@ import { Badge } from './ui/badge';
 import { Textarea } from './ui/textarea';
 import { toast } from 'sonner';
 import { analyzeSentiment, exportToGoogleCalendar, generateSentimentSummary } from '../services/api';
+import Image from 'next/image';
 
 interface EventDetailsDialogProps {
   event: Event;
@@ -66,9 +67,10 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
       <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
         {/* Header Image */}
         <div className="relative h-64 md:h-80">
-          <img
+          <Image
             src={event.imageUrl}
             alt={event.title}
+            fill={true}
             className="w-full h-full object-cover"
           />
           <button

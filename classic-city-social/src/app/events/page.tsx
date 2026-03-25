@@ -244,7 +244,7 @@ export default function EventsPage() {
                   <Button
                     onClick={handleLogout}
                     variant="outline"
-                    className="border-white/30 text-white hover:bg-white/10 gap-2"
+                    className="border-white/30 text-black hover:bg-white/10 hover:text-white"
                   >
                     <LogOut className="w-4 h-4" />
                     <span className="hidden md:inline">Logout</span>
