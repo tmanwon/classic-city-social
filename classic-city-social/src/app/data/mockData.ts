@@ -82,9 +82,9 @@ export const athensLocations: AthensLocation[] = [
 export const mockEvents: Event[] = [
   {
     id: '1',
-    title: 'Georgia Bulldogs vs. Florida Gators',
-    description: 'Experience the thrill of SEC football at Sanford Stadium! Watch the Dawgs take on the Gators in this classic rivalry matchup.',
-    date: '2026-10-31',
+    title: 'Georgia Bulldogs vs. Auburn Tigers',
+    description: 'Experience the thrill of SEC football at Sanford Stadium! Watch the Dawgs take on the Tigers in this classic rivalry matchup.',
+    date: '2026-10-17',
     time: '15:30',
     location: 'Sanford Stadium, Athens, GA',
     coordinates: { lat: 33.9498, lng: -83.3733 },

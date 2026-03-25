@@ -219,7 +219,7 @@ export default function EventsPage() {
       <header className="bg-gradient-to-r from-red-600 to-black text-white shadow-lg sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3" onClick={() => router.push('/')} style={{ cursor: 'pointer' }}>
               <Sparkles className="w-8 h-8" />
               <h1 className="text-2xl md:text-3xl font-bold">ClassicCity<span className="text-red-500">Social</span></h1>
             </div>
