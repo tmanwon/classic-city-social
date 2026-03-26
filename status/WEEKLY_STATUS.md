@@ -33,15 +33,15 @@ Upload image to `/images/` and link it below:
 ## Progress Summary - **Week #2:**  Monday, March 23rd -  Sunday, March 29th
 
 ** What we completed this week:**  
-- 
--  
+- We were able to complete the figma pages last week and using this were able to complete the frontend portion for the assignment this week.
+-  Continued having our weekly meeting on wednesday.
 
 ** Issues / blockers encountered:**  
--  
+-  We had some trouble loading the website, but resolved it when we all met.
 -  
 
 ** Goals for next week:**  
--  
+-  Wait for furthur instruction.
 -  
 
 ---
