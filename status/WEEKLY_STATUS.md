@@ -34,7 +34,9 @@ Upload image to `/images/` and link it below:
 
 ** What we completed this week:**  
 - We were able to complete the figma pages last week and using this were able to complete the frontend portion for the assignment this week.
--  Continued having our weekly meeting on wednesday.
+- A groupmember created a a branch named frontend construction and we all worked together to commit the pages.
+- The branch was then merged to main.
+  
 
 ** Issues / blockers encountered:**  
 -  We had some trouble loading the website, but resolved it when we all met.
