@@ -11,6 +11,11 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { toast } from 'sonner';
 
+/**
+ * Signup Page
+ * User registration form with name, email, and password validation
+ * Creates new user account via AuthContext and redirects to events
+ */
 export default function SignupPage() {
   const router = useRouter();
   const { signup } = useAuth();
@@ -19,6 +24,11 @@ export default function SignupPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  /**
+   * Handles form submission - creates new user account
+   * On success: shows toast and redirects to events
+   * On error: displays generic error message to prevent info leakage
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -52,8 +62,9 @@ export default function SignupPage() {
             <p className="text-gray-300">Join the ClassicCitySocial community</p>
           </div>
 
-          {/* Form */}
+          {/* Registration form with name, email, and password fields */}
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Full name field */}
             <div className="space-y-2">
               <Label htmlFor="name" className="text-white">
                 Full Name
@@ -72,6 +83,7 @@ export default function SignupPage() {
               </div>
             </div>
 
+            {/* Email field */}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-white">
                 Email
@@ -90,6 +102,7 @@ export default function SignupPage() {
               </div>
             </div>
 
+            {/* Password field with minimum 6 character requirement */}
             <div className="space-y-2">
               <Label htmlFor="password" className="text-white">
                 Password

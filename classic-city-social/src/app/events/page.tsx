@@ -25,31 +25,47 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { toast } from 'sonner';
 import { getUserLocation, calculateDistance } from '../services/api';
 
+/**
+ * Events Page
+ * Main application page displaying events with advanced filtering and search.
+ * Authenticated users can create/edit/delete events and manage interests.
+ * All users can browse events, mark attendance, and read/write reviews.
+ */
 export default function EventsPage() {
   const router = useRouter();
   const { user, isAuthenticated, logout, updateUserInterests } = useAuth();
-  
+
+  // Event management state
   const [events, setEvents] = useState<Event[]>(mockEvents);
   const [filteredEvents, setFilteredEvents] = useState<Event[]>(mockEvents);
+
+  // Filter state
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [distanceFilter, setDistanceFilter] = useState<number | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+
+  // UI state for modals and interactions
   const [showEventForm, setShowEventForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | undefined>(undefined);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+
+  // User preferences
   const [userInterests, setUserInterests] = useState<string[]>(user?.interests || []);
 
-  // Get user location on mount
+  // Fetch user's location for distance-based filtering
   useEffect(() => {
     getUserLocation().then(setUserLocation);
   }, []);
 
-  // Filter events based on search, category, distance, and interests
+  /**
+   * Main filtering logic - applies search, category, distance, and interest filters
+   * Interest-based filtering also sorts matching events to the top for authenticated users
+   */
   useEffect(() => {
     let filtered = events;
 
-    // Search filter
+    // Text search - matches title, description, or location
     if (searchQuery) {
       filtered = filtered.filter(
         (event) =>
@@ -66,7 +82,7 @@ export default function EventsPage() {
       );
     }
 
-    // Distance filter
+    // Distance filter - uses haversine formula to calculate miles from user location
     if (distanceFilter && userLocation) {
       filtered = filtered.filter((event) => {
         if (!event.coordinates) return true;
@@ -80,9 +96,8 @@ export default function EventsPage() {
       });
     }
 
-    // Interest-based filter (if user has interests selected)
+    // Personalization - sort events matching user's interests to the top
     if (userInterests.length > 0 && isAuthenticated) {
-      // Sort by matching interests
       filtered = filtered.sort((a, b) => {
         const aMatch = userInterests.includes(a.category.toLowerCase());
         const bMatch = userInterests.includes(b.category.toLowerCase());
@@ -95,6 +110,10 @@ export default function EventsPage() {
     setFilteredEvents(filtered);
   }, [searchQuery, selectedCategory, distanceFilter, events, userLocation, userInterests, isAuthenticated]);
 
+  /**
+   * Creates a new event and adds it to the top of the list
+   * Only available to authenticated users
+   */
   const handleCreateEvent = (eventData: Partial<Event>) => {
     if (!user) return;
 
@@ -120,6 +139,9 @@ export default function EventsPage() {
     toast.success('Event created successfully!');
   };
 
+  /**
+   * Updates an existing event with new data
+   */
   const handleUpdateEvent = (eventData: Partial<Event>) => {
     if (!editingEvent) return;
 
@@ -135,11 +157,18 @@ export default function EventsPage() {
     toast.success('Event updated successfully!');
   };
 
+  /**
+   * Removes an event from the list
+   */
   const handleDeleteEvent = (id: string) => {
     setEvents(events.filter((event) => event.id !== id));
     toast.success('Event deleted');
   };
 
+  /**
+   * Toggle user's attendance for an event
+   * Adds or removes user ID from attendees list
+   */
   const handleAttendEvent = (id: string) => {
     if (!user) {
       toast.error('Please log in to attend events');
@@ -163,10 +192,14 @@ export default function EventsPage() {
 
     const event = events.find((e) => e.id === id);
     const isCurrentlyAttending = event?.attendees.includes(user.id);
-    
+
     toast.success(isCurrentlyAttending ? 'Removed from attending list' : 'Marked as attending!');
   };
 
+  /**
+   * Adds a review to an event and updates both the events list
+   * and the currently viewed event details
+   */
   const handleAddReview = (eventId: string, review: Review) => {
     setEvents(
       events.map((event) =>
@@ -175,8 +208,8 @@ export default function EventsPage() {
           : event
       )
     );
-    
-    // Update selected event if viewing details
+
+    // Keep selected event in sync with updated reviews
     if (selectedEvent?.id === eventId) {
       setSelectedEvent({
         ...selectedEvent,
@@ -185,6 +218,10 @@ export default function EventsPage() {
     }
   };
 
+  /**
+   * Picks a random event from the filtered list
+   * Useful when user doesn't know what to do or wants discovery
+   */
   const handleSurpriseMe = () => {
     if (filteredEvents.length === 0) {
       toast.error('No events available');
@@ -195,6 +232,10 @@ export default function EventsPage() {
     toast.success('Surprise! Here\'s a random event for you!');
   };
 
+  /**
+   * Toggles interest tags for personalized filtering
+   * Updates user preferences in AuthContext
+   */
   const handleToggleInterest = (interest: string) => {
     const newInterests = userInterests.includes(interest)
       ? userInterests.filter((i) => i !== interest)
@@ -215,7 +256,7 @@ export default function EventsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+      {/* Navigation header - shows user info and auth/logout buttons */}
       <header className="bg-gradient-to-r from-red-600 to-black text-white shadow-lg sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -273,10 +314,10 @@ export default function EventsPage() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Filters section */}
+        {/* Filtering and search controls */}
         <div className="mb-8 space-y-4">
           <div className="flex flex-col md:flex-row gap-4">
-            {/* Search */}
+            {/* Text search across event titles, descriptions, and locations */}
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <Input
@@ -287,7 +328,7 @@ export default function EventsPage() {
               />
             </div>
 
-            {/* Category filter */}
+            {/* Category dropdown filter */}
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
               <SelectTrigger className="w-full md:w-48">
                 <Filter className="w-4 h-4 mr-2" />
@@ -302,7 +343,7 @@ export default function EventsPage() {
               </SelectContent>
             </Select>
 
-            {/* Distance filter */}
+            {/* Distance-based location filter */}
             <Select
               value={distanceFilter?.toString() || 'all'}
               onValueChange={(val) => setDistanceFilter(val === 'all' ? null : Number(val))}
@@ -319,7 +360,7 @@ export default function EventsPage() {
               </SelectContent>
             </Select>
 
-            {/* Surprise me button */}
+            {/* Random event picker for discovery */}
             <Button
               onClick={handleSurpriseMe}
               variant="outline"
@@ -330,7 +371,7 @@ export default function EventsPage() {
             </Button>
           </div>
 
-          {/* Interest badges */}
+          {/* Interest-based personalization - user can toggle to prioritize certain event types */}
           {isAuthenticated && (
             <div>
               <p className="text-sm text-gray-600 mb-2">Filter by your interests:</p>
@@ -350,14 +391,14 @@ export default function EventsPage() {
           )}
         </div>
 
-        {/* Results count */}
+        {/* Search results counter */}
         <div className="mb-6">
           <p className="text-gray-600">
             Showing {filteredEvents.length} {filteredEvents.length === 1 ? 'event' : 'events'}
           </p>
         </div>
 
-        {/* Events grid */}
+        {/* Events grid - displays all filtered events */}
         {filteredEvents.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-xl text-gray-600 mb-4">No events found</p>
@@ -382,7 +423,7 @@ export default function EventsPage() {
         )}
       </div>
 
-      {/* Event form modal */}
+      {/* Modal for creating or editing an event */}
       {showEventForm && (
         <EventForm
           event={editingEvent}
@@ -394,7 +435,7 @@ export default function EventsPage() {
         />
       )}
 
-      {/* Event details modal */}
+      {/* Modal for viewing full event details, adding reviews, and marking attendance */}
       {selectedEvent && (
         <EventDetailsDialog
           event={selectedEvent}

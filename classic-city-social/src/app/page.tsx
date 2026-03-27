@@ -5,12 +5,17 @@ import { motion } from 'motion/react';
 import { Calendar, MapPin, Users, Star, Sparkles } from 'lucide-react';
 import { Button } from './components/ui/button';
 
+/**
+ * Splash/Landing Page
+ * Displays the app's value proposition with animated hero section,
+ * feature highlights, and CTAs to sign up or browse events
+ */
 export default function SplashPage() {
   const router = useRouter();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-600 via-black to-gray-900 text-white relative overflow-hidden">
-      {/* Background image overlay */}
+      {/* Background image overlay - subtle event photo background */}
       <div 
         className="absolute inset-0 opacity-20"
         style={{
@@ -20,7 +25,7 @@ export default function SplashPage() {
         }}
       />
       
-      {/* Animated decorative elements */}
+      {/* Animated decorative blobs - add visual interest and movement */}
       <motion.div
         className="absolute top-20 left-10 w-20 h-20 bg-red-500 rounded-full opacity-30 blur-xl"
         animate={{
@@ -50,7 +55,7 @@ export default function SplashPage() {
       />
 
       <div className="relative z-10 container mx-auto px-4 py-12 flex flex-col items-center justify-center min-h-screen">
-        {/* Logo/Brand */}
+        {/* Logo/Brand section - fades in from top */}
         <motion.div
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -64,7 +69,7 @@ export default function SplashPage() {
           <p className="text-xl md:text-2xl text-gray-300 max-w-2xl">Discover events around UGA campus and the Classic City</p>
         </motion.div>
 
-        {/* Feature cards */}
+        {/* Feature cards - highlight 4 main app features */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -104,7 +109,7 @@ export default function SplashPage() {
           </div>
         </motion.div>
 
-        {/* Description */}
+        {/* Detailed description section - explains app benefits */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -115,7 +120,7 @@ export default function SplashPage() {
           <p className="text-gray-400">Create custom events, mark your attendance, discover random activities when you're bored, and filter by your interests. Explore the Classic City together!</p>
         </motion.div>
 
-        {/* CTA Buttons */}
+        {/* Call-to-action buttons - primary (signup) and secondary (browse) options */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -137,7 +142,7 @@ export default function SplashPage() {
           >Browse Events</Button>
         </motion.div>
 
-        {/* Footer text */}
+        {/* Footer text - handles existing user redirect to login */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
