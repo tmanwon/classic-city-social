@@ -11,6 +11,11 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { toast } from 'sonner';
 
+/**
+ * Login Page
+ * User authentication form with email/password validation
+ * Redirects to events page on successful login
+ */
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
@@ -18,6 +23,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  /**
+   * Handles form submission - authenticates user via AuthContext
+   * On success: shows toast and redirects to events
+   * On error: displays error toast with password requirements
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -50,6 +60,7 @@ export default function LoginPage() {
             <p className="text-gray-300">Log in to discover events around Athens</p>
           </div>
 
+          {/* Login form with email and password fields */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-white">
@@ -69,6 +80,7 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {/* Password field */}
             <div className="space-y-2">
               <Label htmlFor="password" className="text-white">
                 Password
@@ -96,6 +108,7 @@ export default function LoginPage() {
             </Button>
           </form>
 
+          {/* Divider between login form and alternative options */}
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-white/20"></div>
@@ -105,6 +118,7 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {/* Alternative actions - sign up and continue as guest */}
           <div className="text-center space-y-4">
             <p className="text-gray-300">
               Don't have an account?{' '}
