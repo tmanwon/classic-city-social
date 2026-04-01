@@ -36,7 +36,7 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
   };
 
   const categoryColor = categoryColors[event.category.toLowerCase()] || 'bg-gray-500';
-
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -44,7 +44,7 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
       whileHover={{ y: -5 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="overflow-hidden h-full flex flex-col hover:shadow-xl transition-shadow">
+      <Card className="overflow-hidden h-full flex flex-col gap-0 hover:shadow-xl transition-shadow">
         {/* Image */}
         <div className="relative h-48 overflow-hidden">
           <Image

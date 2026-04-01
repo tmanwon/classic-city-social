@@ -16,8 +16,18 @@ export interface Event {
   capacity?: number;
   attendees: string[];
   reviews: Review[];
-  createdBy: string;
+  createdBy?: string; // user ID of the creator
   source: 'user' | 'eventbrite' | 'ticketmaster' | 'athens_data';
+}
+
+export interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  friends: string[]
+  imageUrl?: string;
+  myEvents: string[]; // IDs of events the user has created
+  eventsAttending: string[];
 }
 
 export interface Review {
