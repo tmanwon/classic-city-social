@@ -2,15 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-  Plus, 
-  LogOut, 
-  Search, 
-  Filter, 
-  Sparkles, 
-  MapPin, 
+import {
+  Plus,
+  LogOut,
+  Search,
+  Filter,
+  Sparkles,
+  MapPin,
   User,
-  Shuffle
+  Shuffle,
+  Map as MapIcon
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
@@ -18,6 +19,7 @@ import { Event, mockEvents, categories, Review } from '../data/mockData';
 import { EventCard } from '../components/EventCardNew';
 import { EventForm } from '../components/EventForm';
 import { EventDetailsDialog } from '../components/EventDetailsDialog';
+import { MapSlideOver } from '../components/MapSlideOver';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
@@ -49,6 +51,7 @@ export default function EventsPage() {
   const [showEventForm, setShowEventForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | undefined>(undefined);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [showMap, setShowMap] = useState(false);
 
   // User preferences
   const [userInterests, setUserInterests] = useState<string[]>(user?.interests || []);
@@ -125,7 +128,7 @@ export default function EventsPage() {
   const fetchEvents = async () => {
     // Ticketmaster API fetch (example, not fully implemented)
     try {
-      const response = await fetch("https://app.ticketmaster.com/discovery/v2/events.json?city=Athens&size=60&apikey=lMaZulMtOZdKNomXL1SRPuttwidvmr7M");
+      const response = await fetch(`https://app.ticketmaster.com/discovery/v2/events.json?city=Athens&stateCode=GA&size=60&apikey=${process.env.NEXT_PUBLIC_TICKETMASTER_API_KEY}`);
       //const response = await fetch('https://app.ticketmaster.com/discovery/v2/events.json?postalCode=30601&apikey=11qju5jEo2UfKLGYhgwWx2waKSz1AcBo');
       if (!response.ok) {
         throw new Error(`Error Code ${response.status}: Failed to fetch events from Ticketmaster: ${response.statusText}`);
@@ -140,7 +143,7 @@ export default function EventsPage() {
         const maxResImg = event.images.reduce((prev: { width: number }, current: { width: number }) => {
           return (prev.width > current.width) ? prev : current;
         });
-        
+
         return (
           {
             id: Math.random().toString(36).substr(2, 9),
@@ -149,6 +152,10 @@ export default function EventsPage() {
             date: event.dates.start.localDate,
             time: event.dates.start.localTime,
             location: `${event._embedded.venues[0].name}`,
+            coordinates: {
+              lat: event._embedded.venues[0].location.latitude,
+              lng: event._embedded.venues[0].location.longitude,
+            },
             category: event.classifications[0].segment.name,
             imageUrl: maxResImg.url || 'https://images.unsplash.com/photo-1672841821756-fc04525771c2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb25jZXJ0JTIwbXVzaWMlMjBmZXN0aXZhbCUyMGNyb3dkfGVufDF8fHx8MTc3Mzg2ODYyMXww&ixlib=rb-4.1.0&q=80&w=1080',
             venue: event._embedded.venues[0].name,
@@ -159,7 +166,7 @@ export default function EventsPage() {
             source: 'ticketmaster',
           }
         );
-    });
+      });
 
 
 
@@ -301,7 +308,7 @@ export default function EventsPage() {
     const newInterests = userInterests.includes(interest)
       ? userInterests.filter((i) => i !== interest)
       : [...userInterests, interest];
-    
+
     setUserInterests(newInterests);
     if (user) {
       updateUserInterests(newInterests);
@@ -325,11 +332,14 @@ export default function EventsPage() {
               <Sparkles className="w-8 h-8" />
               <h1 className="text-2xl md:text-3xl font-bold">ClassicCity<span className="text-red-500">Social</span></h1>
             </div>
-            
+
             <div className="flex items-center gap-3">
               {isAuthenticated ? (
                 <>
-                  <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-white/10 rounded-lg">
+                  <div
+                    className="hidden md:flex items-center gap-2 px-3 py-2 bg-white/10 rounded-lg cursor-pointer hover:bg-white/20 transition-colors"
+                    onClick={() => router.push('/profile')}
+                  >
                     <User className="w-4 h-4" />
                     <span>{user?.name}</span>
                   </div>
@@ -430,6 +440,15 @@ export default function EventsPage() {
               <Shuffle className="w-4 h-4" />
               Surprise Me!
             </Button>
+
+            {/* Map View Toggle */}
+            <Button
+              onClick={() => setShowMap(true)}
+              className="gap-2 whitespace-nowrap bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <MapIcon className="w-4 h-4" />
+              Map View
+            </Button>
           </div>
 
           {/* Interest-based personalization - user can toggle to prioritize certain event types */}
@@ -505,6 +524,14 @@ export default function EventsPage() {
           onAttend={handleAttendEvent}
         />
       )}
+
+      {/* Map Slide-over */}
+      <MapSlideOver
+        isOpen={showMap}
+        onClose={() => setShowMap(false)}
+        events={filteredEvents}
+        onAttendEvent={handleAttendEvent}
+      />
     </div>
   );
 }
