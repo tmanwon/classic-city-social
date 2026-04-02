@@ -1,4 +1,4 @@
-import { motion } from 'motion/react';
+import { color, motion } from 'motion/react';
 import { Calendar, MapPin, Users, Star, ExternalLink, UserCheck } from 'lucide-react';
 import { Event } from '../data/mockData';
 import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
@@ -6,7 +6,10 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { useAuth } from '../context/AuthContext';
 import { generateSentimentSummary } from '../services/api';
+import { useExtractColors } from "react-extract-colors";
 import Image from 'next/image';
+import { Londrina_Solid } from 'next/font/google';
+import { use, useEffect } from 'react';
 
 interface EventCardProps {
   event: Event;
@@ -34,6 +37,23 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
     volunteering: 'bg-pink-500',
     tech: 'bg-cyan-500',
   };
+  const { colors, loading } = useExtractColors(event.imageUrl, {
+    maxColors: 3,
+    format: "rgb",
+    maxSize: 200,
+    sortBy: "dominance"
+  });
+
+  useEffect(() => {
+    if (colors[0] && colors[1] && colors[2]) {
+    colors[0] = colors[0].replace('rgb', 'rgba').replace(')', ', 1.0)');
+    colors[1] = colors[1].replace('rgb', 'rgba').replace(')', ', 0.97)');
+    colors[2] = colors[2].replace('rgb', 'rgba').replace(')', ', 0.8)');
+    //colors.reverse();
+    }
+  }, [loading]);
+  //console.log('Extracted colors:', colors);
+  
 
   const categoryColor = categoryColors[event.category.toLowerCase()] || 'bg-gray-500';
 /*
@@ -60,8 +80,11 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
       whileHover={{ y: -5 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="relative overflow-hidden h-full flex flex-col hover:shadow-xl transition-shadow z-0" style={{backgroundImage: `url(${event.imageUrl})`, backgroundSize: 'contain', backgroundPosition: 'top',}}>
+      <Card className="relative overflow-hidden h-full flex flex-col hover:shadow-xl transition-shadow z-0" style={{backgroundImage: `url(${event.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'top'}}>
         {/* Image */}
+        {/*
+        <div className="relative h-48 overflow-hidden z-1">
+          */}
         <div className="relative h-48 overflow-hidden z-1">
           <Image
             src={event.imageUrl}
@@ -89,32 +112,35 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
           )}
         </div>
         
-        <div className='flex-1 flex flex-col bg-[radial-gradient(ellipse_62.87%_62.87%_at_50.00%_50.00%,_rgba(83.17,_83.17,_83.17,_0.69)_0%,_rgba(83,_83,_83,_0)_100%)]'>
+        <div className="flex-1 flex flex-col " style={{ background: `linear-gradient(to top, ${colors[0]} 0%, ${colors[1]} 70%, ${colors[2]} 90%, transparent 100%)` }}>
         <CardHeader className="pb-3 z-2">
-          <h3 className="text-xl line-clamp-2">{event.title}</h3>
+          <h3 className="text-xl font-semibold line-clamp-2" style={{ color: `contrast-color(${colors[2]})` }}>{event.title}</h3>
           <div className="flex items-center gap-4 text-sm text-gray-600 mt-2">
             <div className="flex items-center gap-1">
-              <Calendar className="w-4 h-4" />
-              <span>{new Date(event.date).toLocaleDateString()}</span>
+              <Calendar className="w-4 h-4"  style={{ color: `contrast-color(${colors[1]})` }}/>
+              <span style={{ color: `contrast-color(${colors[1]})` }}>{new Date(event.date).toLocaleDateString()}</span>
             </div>
             <div className="flex items-center gap-1">
-              <Users className="w-4 h-4" />
-              <span>{event.attendees.length}</span>
+              <Users className="w-4 h-4" style={{ color: `contrast-color(${colors[1]})` }}/>
+              <span style={{ color: `contrast-color(${colors[1]})` }}>{event.attendees.length}</span>
             </div>
           </div>
         </CardHeader>
 
         <CardContent className="flex-1 pb-3 z-2">
-          <p className="text-sm text-gray-700 line-clamp-3 mb-3">{event.description}</p>
+          <p className="text-sm text-gray-700 line-clamp-3 mb-3" style={{ color: `contrast-color(${colors[1]})` }}>{event.description}</p>
           
           <div className="flex items-start gap-2 text-sm text-gray-600 mb-3">
-            <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-            <span className="line-clamp-2">{event.location}</span>
+            <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: `contrast-color(${colors[1]})` }}/>
+            <span className="line-clamp-2" style={{ color: `contrast-color(${colors[1]})` }}>{event.location}</span>
           </div>
 
           {event.price && (
             <p className="text-sm mb-2">
-              <span className="text-gray-600">Price:</span> <span className="font-medium">{event.price}</span>
+              <span className="text-gray-600" style={{ color: `contrast-color(${colors[1]})` }}>
+                Price: 
+              </span>
+              <span className="font-medium" style={{ color: `contrast-color(${colors[1]})` }}>{" " + event.price}</span>
             </p>
           )}
 
@@ -122,14 +148,18 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
             <div className="flex items-center gap-2 mb-2">
               <div className="flex items-center gap-1">
                 <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                <span className="font-medium">{avgRating.toFixed(1)}</span>
+                <span className="font-medium" style={{ color: `contrast-color(${colors[1]})` }}>
+                  {avgRating.toFixed(1)}
+                </span>
               </div>
-              <span className="text-sm text-gray-600">({event.reviews.length} reviews)</span>
+              <span className="text-sm text-gray-600" style={{ color: `contrast-color(${colors[1]})` }}>
+                ({event.reviews.length} reviews)
+              </span>
             </div>
           )}
 
           {event.reviews.length > 0 && (
-            <p className="text-xs text-gray-500 italic">{sentimentSummary}</p>
+            <p className="text-xs text-gray-500 italic" style={{ color: `contrast-color(${colors[1]})` }}>{sentimentSummary}</p>
           )}
         </CardContent>
 

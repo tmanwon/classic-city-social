@@ -15,7 +15,7 @@ import {
 import { motion } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
 import { Event, mockEvents, categories, Review } from '../data/mockData';
-import { EventCard } from '../components/EventCard';
+import { EventCard } from '../components/EventCardNew';
 import { EventForm } from '../components/EventForm';
 import { EventDetailsDialog } from '../components/EventDetailsDialog';
 import { Button } from '../components/ui/button';
@@ -125,8 +125,8 @@ export default function EventsPage() {
   const fetchEvents = async () => {
     // Ticketmaster API fetch (example, not fully implemented)
     try {
-      //const response = await fetch('https://app.ticketmaster.com/discovery/v2/events.json?classificationName=music&postalCode=30601&apikey=11qju5jEo2UfKLGYhgwWx2waKSz1AcBo');
-      const response = await fetch('https://app.ticketmaster.com/discovery/v2/events.json?postalCode=30601&apikey=11qju5jEo2UfKLGYhgwWx2waKSz1AcBo');
+      const response = await fetch("https://app.ticketmaster.com/discovery/v2/events.json?city=Athens&apikey=lMaZulMtOZdKNomXL1SRPuttwidvmr7M");
+      //const response = await fetch('https://app.ticketmaster.com/discovery/v2/events.json?postalCode=30601&apikey=11qju5jEo2UfKLGYhgwWx2waKSz1AcBo');
       if (!response.ok) {
         throw new Error(`Error Code ${response.status}: Failed to fetch events from Ticketmaster: ${response.statusText}`);
       }
@@ -134,22 +134,32 @@ export default function EventsPage() {
       console.log('Ticketmaster Data:', ticketmaster_data);
       console.log('Mapped Events:', ticketmaster_data._embedded.events);
 
-      const newEvents: Event[] = ticketmaster_data._embedded.events.map((event: any) => ({
-        id: Math.random().toString(36).substr(2, 9),
-        title: event.name,
-        description: "Blah",
-        date: event.dates.start.localDate,
-        time: event.dates.start.localTime,
-        location: `${event._embedded.venues[0].name}, ${event._embedded.venues[0].city.name}, ${event._embedded.venues[0].state.stateCode}`,
-        category: event.classifications[0].segment.name,
-        imageUrl: event.images[3].url || 'https://images.unsplash.com/photo-1672841821756-fc04525771c2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb25jZXJ0JTIwbXVzaWMlMjBmZXN0aXZhbCUyMGNyb3dkfGVufDF8fHx8MTc3Mzg2ODYyMXww&ixlib=rb-4.1.0&q=80&w=1080',
-        venue: event._embedded.venues[0].name,
-        price: "$20",
-        attendees: [],
-        reviews: [],
-        createdBy: null,
-        source: 'ticketmaster',
-     }));
+      // Get object from ticketmaster_data._embedded.events.images array with largest width and use its url for the event image
+
+      const newEvents: Event[] = ticketmaster_data._embedded.events.map((event: any) => {
+        const maxResImg = event.images.reduce((prev: { width: number }, current: { width: number }) => {
+          return (prev.width > current.width) ? prev : current;
+        });
+        
+        return (
+          {
+            id: Math.random().toString(36).substr(2, 9),
+            title: event.name,
+            description: "Blah",
+            date: event.dates.start.localDate,
+            time: event.dates.start.localTime,
+            location: `${event._embedded.venues[0].name}, ${event._embedded.venues[0].city.name}, ${event._embedded.venues[0].state.stateCode}`,
+            category: event.classifications[0].segment.name,
+            imageUrl: maxResImg.url || 'https://images.unsplash.com/photo-1672841821756-fc04525771c2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb25jZXJ0JTIwbXVzaWMlMjBmZXN0aXZhbCUyMGNyb3dkfGVufDF8fHx8MTc3Mzg2ODYyMXww&ixlib=rb-4.1.0&q=80&w=1080',
+            venue: event._embedded.venues[0].name,
+            price: "$20",
+            attendees: [],
+            reviews: [],
+            createdBy: null,
+            source: 'ticketmaster',
+          }
+        );
+    });
 
 
 
