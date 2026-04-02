@@ -125,7 +125,7 @@ export default function EventsPage() {
   const fetchEvents = async () => {
     // Ticketmaster API fetch (example, not fully implemented)
     try {
-      const response = await fetch("https://app.ticketmaster.com/discovery/v2/events.json?city=Athens&apikey=lMaZulMtOZdKNomXL1SRPuttwidvmr7M");
+      const response = await fetch("https://app.ticketmaster.com/discovery/v2/events.json?city=Athens&size=60&apikey=lMaZulMtOZdKNomXL1SRPuttwidvmr7M");
       //const response = await fetch('https://app.ticketmaster.com/discovery/v2/events.json?postalCode=30601&apikey=11qju5jEo2UfKLGYhgwWx2waKSz1AcBo');
       if (!response.ok) {
         throw new Error(`Error Code ${response.status}: Failed to fetch events from Ticketmaster: ${response.statusText}`);
@@ -148,7 +148,7 @@ export default function EventsPage() {
             description: "Blah",
             date: event.dates.start.localDate,
             time: event.dates.start.localTime,
-            location: `${event._embedded.venues[0].name}, ${event._embedded.venues[0].city.name}, ${event._embedded.venues[0].state.stateCode}`,
+            location: `${event._embedded.venues[0].name}`,
             category: event.classifications[0].segment.name,
             imageUrl: maxResImg.url || 'https://images.unsplash.com/photo-1672841821756-fc04525771c2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb25jZXJ0JTIwbXVzaWMlMjBmZXN0aXZhbCUyMGNyb3dkfGVufDF8fHx8MTc3Mzg2ODYyMXww&ixlib=rb-4.1.0&q=80&w=1080',
             venue: event._embedded.venues[0].name,

@@ -80,7 +80,7 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
       whileHover={{ y: -5 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="relative overflow-hidden h-full flex flex-col hover:shadow-xl transition-shadow z-0" style={{backgroundImage: `url(${event.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'top'}}>
+      <Card className="relative overflow-hidden h-full flex flex-col hover:shadow-xl transition-shadow z-0" style={{backgroundImage: `url(${event.imageUrl})`, backgroundSize: 'contain', backgroundPosition: 'top'}}>
         {/* Image */}
         {/*
         <div className="relative h-48 overflow-hidden z-1">
@@ -90,6 +90,8 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
             src={event.imageUrl}
             alt={event.title}
             fill={true}
+            sizes="(max-width: 354px)"
+            loading='lazy'
             className="invisible w-full h-full object-cover"
           />
           <div className="absolute top-3 left-3 flex gap-2">
