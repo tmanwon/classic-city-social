@@ -51,16 +51,17 @@ Upload image to `/images/` and link it below:
 ## Progress Summary - **Week #3:**  Monday, March 30th -  Sunday, April 5th
 
 ** What we completed this week:**  
-- 
--  
+- We had our weekly meeting and split up the work of DB CRUD for events, for users, and Events api, openAI api
+- Created a branch 'database-and-api' where we will be commitng the work.
+- Aimed to at least get started this weekend and/or finish.
 
 ** Issues / blockers encountered:**  
 -  
 -  
 
 ** Goals for next week:**  
--  
--  
+-  Meet with the group again and see the progress made.
+-  See if anyone in the group needs help with their part
 
 ---
 
