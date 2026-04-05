@@ -1,4 +1,6 @@
-import { useState } from 'react';
+'use client';
+
+import { useEffect, useState } from 'react';
 import { X, Star, Calendar, ExternalLink, Users, MapPin, UserCheck } from 'lucide-react';
 import { Event, Review } from '../data/mockData';
 import { useAuth } from '../context/AuthContext';
@@ -7,6 +9,7 @@ import { Badge } from './ui/badge';
 import { Textarea } from './ui/textarea';
 import { toast } from 'sonner';
 import { analyzeSentiment, exportToGoogleCalendar, generateSentimentSummary } from '../services/api';
+import { summarizeReviews } from '@/lib/summarizeReviews';
 import Image from 'next/image';
 
 interface EventDetailsDialogProps {
@@ -21,15 +24,46 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  
+
+  const [reviewSummary, setReviewSummary] = useState('');
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryError, setSummaryError] = useState('');
+
   const isAttending = user ? event.attendees.includes(user.id) : false;
   const avgRating = event.reviews.length > 0
     ? event.reviews.reduce((sum, r) => sum + r.rating, 0) / event.reviews.length
     : 0;
 
+  useEffect(() => {
+    const loadSummary = async () => {
+      try {
+        if (!event || !event.reviews || event.reviews.length < 2) {
+          setReviewSummary('');
+          setSummaryError('');
+          return;
+        }
+
+        setSummaryLoading(true);
+        setSummaryError('');
+
+        const reviewTexts = event.reviews.map((review) => review.comment);
+        const summary = await summarizeReviews(event.title, reviewTexts);
+
+        setReviewSummary(summary);
+      } catch (error) {
+        console.error(error);
+        setSummaryError('Could not generate review summary.');
+      } finally {
+        setSummaryLoading(false);
+      }
+    };
+
+    loadSummary();
+  }, [event]);
+
   const handleSubmitReview = async () => {
     if (!user || !comment.trim()) return;
-    
+
     setSubmitting(true);
     try {
       const sentiment = await analyzeSentiment(comment);
@@ -42,7 +76,7 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
         sentiment,
         createdAt: new Date().toISOString(),
       };
-      
+
       onAddReview(event.id, newReview);
       setComment('');
       setRating(5);
@@ -65,7 +99,6 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-        {/* Header Image */}
         <div className="relative h-64 md:h-80">
           <Image
             src={event.imageUrl}
@@ -87,9 +120,8 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
         </div>
 
         <div className="p-6 md:p-8">
-          {/* Title and basic info */}
           <h2 className="text-3xl md:text-4xl mb-4">{event.title}</h2>
-          
+
           <div className="flex flex-wrap gap-4 mb-6 text-gray-600">
             <div className="flex items-center gap-2">
               <Calendar className="w-5 h-5" />
@@ -106,7 +138,6 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
             )}
           </div>
 
-          {/* Action buttons */}
           <div className="flex flex-wrap gap-3 mb-6">
             {isAuthenticated && (
               <Button
@@ -124,7 +155,6 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
             </Button>
           </div>
 
-          {/* Location */}
           <div className="mb-6">
             <h3 className="text-lg mb-2">Location</h3>
             <div className="flex items-start gap-2 text-gray-700">
@@ -136,13 +166,11 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
             </div>
           </div>
 
-          {/* Description */}
           <div className="mb-8">
             <h3 className="text-lg mb-2">About This Event</h3>
             <p className="text-gray-700 whitespace-pre-line">{event.description}</p>
           </div>
 
-          {/* Reviews section */}
           <div className="border-t pt-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl">Reviews & Ratings</h3>
@@ -155,6 +183,30 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
               )}
             </div>
 
+            <div className="rounded-xl border p-4 mb-4 bg-white">
+              <h3 className="text-lg font-semibold mb-2">AI Review Summary</h3>
+
+              {summaryLoading && (
+                <p className="text-sm text-gray-500">Generating summary...</p>
+              )}
+
+              {summaryError && (
+                <p className="text-sm text-red-500">{summaryError}</p>
+              )}
+
+              {!summaryLoading && !summaryError && reviewSummary && (
+                <div className="text-sm whitespace-pre-wrap text-gray-700">
+                  {reviewSummary}
+                </div>
+              )}
+
+              {!summaryLoading && !summaryError && !reviewSummary && (
+                <p className="text-sm text-gray-500">
+                  Not enough reviews yet to generate an AI summary.
+                </p>
+              )}
+            </div>
+
             {event.reviews.length > 0 && (
               <div className="bg-blue-50 p-4 rounded-lg mb-6">
                 <p className="text-sm text-blue-900">
@@ -163,7 +215,6 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
               </div>
             )}
 
-            {/* Add review form */}
             {isAuthenticated ? (
               <div className="mb-6 p-4 bg-gray-50 rounded-lg">
                 <h4 className="mb-3">Add Your Review</h4>
@@ -207,7 +258,6 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
               <p className="text-gray-600 mb-6">Log in to add a review</p>
             )}
 
-            {/* Reviews list */}
             <div className="space-y-4">
               {event.reviews.length === 0 ? (
                 <p className="text-gray-500 text-center py-8">No reviews yet. Be the first to review!</p>
@@ -247,7 +297,6 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
             </div>
           </div>
 
-          {/* Event buddies section */}
           {event.attendees.length > 0 && (
             <div className="border-t pt-6 mt-6">
               <h3 className="text-xl mb-4">Event Buddies</h3>
