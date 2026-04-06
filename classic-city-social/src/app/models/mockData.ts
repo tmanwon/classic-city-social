@@ -1,3 +1,8 @@
+import { Event } from './eventSchema';
+import { User } from './userSchema';
+import { Review } from './reviewSchema';
+
+/*
 export interface Event {
   id: string;
   title: string;
@@ -39,6 +44,7 @@ export interface Review {
   sentiment?: 'positive' | 'negative' | 'neutral';
   createdAt: string;
 }
+*/
 
 export interface AthensLocation {
   id: string;

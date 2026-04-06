@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Map as MapIcon, ChevronRight } from 'lucide-react';
-import { Event } from '../data/mockData';
+import { Event } from '../models/mockData';
 import dynamic from 'next/dynamic';
 import { EventDetailsDialog } from './EventDetailsDialog';
 
@@ -67,7 +67,7 @@ export function MapSlideOver({ isOpen, onClose, events, onAttendEvent }: MapSlid
                 </div>
                 <h2 className="text-lg font-bold text-gray-900">Events Map</h2>
               </div>
-              <button 
+              <button
                 onClick={onClose}
                 className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors"
                 aria-label="Close map"
@@ -78,21 +78,21 @@ export function MapSlideOver({ isOpen, onClose, events, onAttendEvent }: MapSlid
 
             {/* Map Area */}
             <div className="flex-1 relative bg-gray-100 h-full w-full">
-              <MapComponent 
-                events={events} 
-                onEventClick={(event) => setSelectedEvent(event)} 
+              <MapComponent
+                events={events}
+                onEventClick={(event) => setSelectedEvent(event)}
               />
             </div>
-            
+
             {/* Display Event Details Dialog over the map instead of a separate page */}
             {selectedEvent && (
               <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                 <EventDetailsDialog 
-                    event={selectedEvent} 
-                    onClose={() => setSelectedEvent(null)} 
-                    onAttend={onAttendEvent || (() => {})}
-                    onAddReview={() => {}}
-                 />
+                <EventDetailsDialog
+                  event={selectedEvent}
+                  onClose={() => setSelectedEvent(null)}
+                  onAttend={onAttendEvent || (() => { })}
+                  onAddReview={() => { }}
+                />
               </div>
             )}
           </motion.div>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
-import { Event } from '../data/mockData';
+import { Event } from '../models/mockData';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';

@@ -1,6 +1,6 @@
 import { color, motion } from 'motion/react';
 import { Calendar, MapPin, Users, Star, ExternalLink, UserCheck } from 'lucide-react';
-import { Event } from '../data/mockData';
+import { Event } from '../models/mockData';
 import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -45,7 +45,7 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
   });
 
   const [domColor, setDomColor] = useState<string>('#000000');
-  
+
   useEffect(() => {
     if (!loading && colors && colors.length > 0) {
       setDomColor(colors[0]);
@@ -59,7 +59,7 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
   };
 
   const rgbDom = hexToRgb(domColor);
-  
+
   // Calculate relative luminance to determine text color (black or white)
   const getContrastColor = (hexColor: string) => {
     const rgb = hexToRgb(hexColor).split(',').map(Number);
@@ -82,7 +82,7 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
       transition={{ duration: 0.3 }}
       className="h-full"
     >
-      <Card 
+      <Card
         className="group relative overflow-hidden h-full min-h-[440px] flex flex-col border-0 shadow-lg hover:shadow-2xl transition-all duration-500"
         style={{ backgroundColor: domColor }}
       >
@@ -96,7 +96,7 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
             loading="lazy"
             className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
           />
-          
+
           {/* Top badges */}
           <div className="absolute top-4 left-4 flex gap-2 z-20">
             <Badge className={`${categoryColor} text-white border-0 shadow-md backdrop-blur-md`}>
@@ -108,7 +108,7 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
               </Badge>
             )}
           </div>
-          
+
           {isAttending && (
             <div className="absolute top-4 right-4 z-20">
               <Badge className="bg-green-500/90 backdrop-blur-md text-white border-0 shadow-md flex items-center gap-1.5 px-3 py-1">
@@ -119,10 +119,10 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
           )}
 
           {/* Smooth Gradient Overlay syncing with the dominant color */}
-          <div 
+          <div
             className="absolute inset-x-0 bottom-0 h-full max-h-[120%]"
-            style={{ 
-              background: `linear-gradient(to top, rgba(${rgbDom}, 1) 0%, rgba(${rgbDom}, 0.95) 15%, rgba(${rgbDom}, 0.7) 35%, rgba(${rgbDom}, 0) 100%)` 
+            style={{
+              background: `linear-gradient(to top, rgba(${rgbDom}, 1) 0%, rgba(${rgbDom}, 0.95) 15%, rgba(${rgbDom}, 0.7) 35%, rgba(${rgbDom}, 0) 100%)`
             }}
           />
         </div>
@@ -130,17 +130,17 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
         {/* Content Container - Starts overlapping the image gradient */}
         <div className="relative z-10 flex flex-col flex-1 mt-[45%] rounded-t-3xl pt-6 pb-5 px-6">
           <CardHeader className="p-0 mb-4 z-20">
-            <h3 
+            <h3
               className="text-2xl font-bold line-clamp-2 leading-tight tracking-tight drop-shadow-sm transition-colors duration-300"
               style={{ color: textColor }}
             >
               {event.title}
             </h3>
-            
+
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-3 text-sm font-medium">
               <div className="flex items-center gap-1.5" style={{ color: mutedTextColor }}>
                 <Calendar className="w-4 h-4" />
-                <span>{new Date(event.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric'})}</span>
+                <span>{new Date(event.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
               </div>
               <div className="flex items-center gap-1.5" style={{ color: mutedTextColor }}>
                 <Users className="w-4 h-4" />
@@ -180,7 +180,7 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
             </div>
           </CardContent>
 
-          <CardFooter 
+          <CardFooter
             className="flex flex-col gap-3 p-0 pt-5 mt-5 border-t border-solid z-20"
             style={{ borderColor: borderColor }}
           >
@@ -189,23 +189,22 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
                 variant="secondary"
                 size="sm"
                 className="flex-1 font-semibold rounded-xl h-10 transition-transform active:scale-95 shadow-sm"
-                style={{ 
+                style={{
                   backgroundColor: isLightText ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
-                  color: textColor 
+                  color: textColor
                 }}
                 onClick={() => onViewDetails?.(event)}
               >
                 <ExternalLink className="w-4 h-4 mr-2" />
                 Details
               </Button>
-              
+
               {isAuthenticated && onAttend && (
                 <Button
                   size="sm"
                   variant={isAttending ? "secondary" : "default"}
-                  className={`flex-1 font-semibold rounded-xl h-10 transition-transform active:scale-95 shadow-md ${
-                    isAttending ? 'opacity-80' : 'hover:scale-[1.02]'
-                  }`}
+                  className={`flex-1 font-semibold rounded-xl h-10 transition-transform active:scale-95 shadow-md ${isAttending ? 'opacity-80' : 'hover:scale-[1.02]'
+                    }`}
                   style={{
                     backgroundColor: isLightText ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)',
                     color: isLightText ? domColor : '#ffffff',

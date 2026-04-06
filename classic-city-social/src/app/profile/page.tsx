@@ -6,7 +6,8 @@ import { motion } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { mockEvents, User as MockUser } from '../data/mockData';
+import { mockEvents } from '../models/mockData';
+import { User as MockUser } from '../models/userSchema';
 import { EventCard } from '../components/EventCardNew';
 import { Camera, Settings, Activity, MapPin, Edit3, ArrowLeft, Users } from 'lucide-react';
 import { toast } from 'sonner';
@@ -14,7 +15,7 @@ import { toast } from 'sonner';
 export default function ProfilePage() {
   const router = useRouter();
   const { user, isAuthenticated, updateUserProfile } = useAuth();
-  
+
   const [isEditingName, setIsEditingName] = useState(false);
   const [editName, setEditName] = useState(user?.name || '');
 
@@ -29,7 +30,7 @@ export default function ProfilePage() {
 
   // Mock past events (just selecting a few events the user "attended" or mock ones)
   const pastEvents = mockEvents.slice(0, 3);
-  
+
   // Mock friends activities
   const friendActivities = [
     { id: 1, friendName: 'Sarah Jenkins', action: 'is attending', eventTitle: 'Botanical Garden Twilight Walk', time: '2 hours ago' },
@@ -63,10 +64,10 @@ export default function ProfilePage() {
 
       <main className="flex-1 container mx-auto px-4 py-8 max-w-6xl">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
+
           {/* Left Column - User Profile Card */}
           <div className="lg:col-span-1 space-y-6">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 flex flex-col items-center text-center relative overflow-hidden"
@@ -86,18 +87,18 @@ export default function ProfilePage() {
                   )}
                 </div>
                 <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                   <div className="p-2 bg-white rounded-full text-black">
-                     <Camera className="w-5 h-5" />
-                   </div>
+                  <div className="p-2 bg-white rounded-full text-black">
+                    <Camera className="w-5 h-5" />
+                  </div>
                 </div>
               </div>
 
               {/* Name Details */}
               {isEditingName ? (
                 <div className="w-full mb-4 z-10 flex flex-col gap-2">
-                  <Input 
-                    value={editName} 
-                    onChange={(e) => setEditName(e.target.value)} 
+                  <Input
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
                     className="text-center font-semibold text-lg"
                     placeholder="Your Name"
                     autoFocus
@@ -133,7 +134,7 @@ export default function ProfilePage() {
             </motion.div>
 
             {/* Friend's Activities Feed */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -166,7 +167,7 @@ export default function ProfilePage() {
 
           {/* Right Column - Past Attended Events */}
           <div className="lg:col-span-2 space-y-6">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -176,22 +177,22 @@ export default function ProfilePage() {
                 <Activity className="w-6 h-6 text-red-500" />
                 Past Attended Events
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {pastEvents.map((event) => (
                   <div key={`profile-event-${event.id}`} className="h-[400px]">
                     {/* We reuse the improved EventCard here! */}
-                    <EventCard 
-                      event={event} 
+                    <EventCard
+                      event={event}
                       onViewDetails={() => router.push('/events')}
                     />
                   </div>
                 ))}
               </div>
-              
+
             </motion.div>
           </div>
-          
+
         </div>
       </main>
     </div>

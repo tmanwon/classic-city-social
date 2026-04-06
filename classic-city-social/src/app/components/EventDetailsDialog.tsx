@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X, Star, Calendar, ExternalLink, Users, MapPin, UserCheck } from 'lucide-react';
-import { Event, Review } from '../data/mockData';
+import { Event, Review } from '../models/mockData';
 import { useAuth } from '../context/AuthContext';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -21,7 +21,7 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  
+
   const isAttending = user ? event.attendees.includes(user.id) : false;
   const avgRating = event.reviews.length > 0
     ? event.reviews.reduce((sum, r) => sum + r.rating, 0) / event.reviews.length
@@ -29,7 +29,7 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
 
   const handleSubmitReview = async () => {
     if (!user || !comment.trim()) return;
-    
+
     setSubmitting(true);
     try {
       const sentiment = await analyzeSentiment(comment);
@@ -42,7 +42,7 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
         sentiment,
         createdAt: new Date().toISOString(),
       };
-      
+
       onAddReview(event.id, newReview);
       setComment('');
       setRating(5);
@@ -89,7 +89,7 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
         <div className="p-6 md:p-8">
           {/* Title and basic info */}
           <h2 className="text-3xl md:text-4xl mb-4">{event.title}</h2>
-          
+
           <div className="flex flex-wrap gap-4 mb-6 text-gray-600">
             <div className="flex items-center gap-2">
               <Calendar className="w-5 h-5" />
@@ -178,11 +178,10 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
                         className="transition-transform hover:scale-110"
                       >
                         <Star
-                          className={`w-6 h-6 ${
-                            num <= rating
+                          className={`w-6 h-6 ${num <= rating
                               ? 'fill-yellow-400 text-yellow-400'
                               : 'text-gray-300'
-                          }`}
+                            }`}
                         />
                       </button>
                     ))}
@@ -230,13 +229,12 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
                     {review.sentiment && (
                       <Badge
                         variant="outline"
-                        className={`mt-2 text-xs ${
-                          review.sentiment === 'positive'
+                        className={`mt-2 text-xs ${review.sentiment === 'positive'
                             ? 'border-green-500 text-green-700'
                             : review.sentiment === 'negative'
-                            ? 'border-red-500 text-red-700'
-                            : 'border-gray-500 text-gray-700'
-                        }`}
+                              ? 'border-red-500 text-red-700'
+                              : 'border-gray-500 text-gray-700'
+                          }`}
                       >
                         {review.sentiment}
                       </Badge>

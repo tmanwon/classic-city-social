@@ -12,8 +12,13 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**', // Matches all hostnames
+        //hostname: '**', // Matches all hostnames
+        hostname: 's1.ticketm.net'
       },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com'
+      }
     ],
   },
 };

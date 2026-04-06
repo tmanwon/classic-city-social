@@ -9,13 +9,16 @@ import {
   Filter,
   Sparkles,
   MapPin,
-  User,
+  User as UserIcon,
   Shuffle,
   Map as MapIcon
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
-import { Event, mockEvents, categories, Review } from '../data/mockData';
+import { mockEvents, categories } from '../models/mockData';
+import { Event } from '../models/eventSchema';
+import { Review } from '../models/reviewSchema';
+import { User } from '../models/userSchema';
 import { EventCard } from '../components/EventCardNew';
 import { EventForm } from '../components/EventForm';
 import { EventDetailsDialog } from '../components/EventDetailsDialog';
@@ -128,7 +131,7 @@ export default function EventsPage() {
   const fetchEvents = async () => {
     // Ticketmaster API fetch (example, not fully implemented)
     try {
-      const response = await fetch(`https://app.ticketmaster.com/discovery/v2/events.json?city=Athens&stateCode=GA&size=60&apikey=${process.env.NEXT_PUBLIC_TICKETMASTER_API_KEY}`);
+      const response = await fetch(`https://app.ticketmaster.com/discovery/v2/events.json?city=Athens&stateCode=GA&size=60&sort=date,asc&apikey=${process.env.NEXT_PUBLIC_TICKETMASTER_API_KEY}`);
       //const response = await fetch('https://app.ticketmaster.com/discovery/v2/events.json?postalCode=30601&apikey=11qju5jEo2UfKLGYhgwWx2waKSz1AcBo');
       if (!response.ok) {
         throw new Error(`Error Code ${response.status}: Failed to fetch events from Ticketmaster: ${response.statusText}`);
@@ -148,7 +151,7 @@ export default function EventsPage() {
           {
             id: Math.random().toString(36).substr(2, 9),
             title: event.name,
-            description: "Blah",
+            description: event.description || "",
             date: event.dates.start.localDate,
             time: event.dates.start.localTime,
             location: `${event._embedded.venues[0].name}`,
@@ -159,7 +162,7 @@ export default function EventsPage() {
             category: event.classifications[0].segment.name,
             imageUrl: maxResImg.url || 'https://images.unsplash.com/photo-1672841821756-fc04525771c2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb25jZXJ0JTIwbXVzaWMlMjBmZXN0aXZhbCUyMGNyb3dkfGVufDF8fHx8MTc3Mzg2ODYyMXww&ixlib=rb-4.1.0&q=80&w=1080',
             venue: event._embedded.venues[0].name,
-            price: "$20",
+            price: event.priceRanges ? `$${event.priceRanges[0].min}+` : "N/A",
             attendees: [],
             reviews: [],
             createdBy: null,
@@ -340,7 +343,7 @@ export default function EventsPage() {
                     className="hidden md:flex items-center gap-2 px-3 py-2 bg-white/10 rounded-lg cursor-pointer hover:bg-white/20 transition-colors"
                     onClick={() => router.push('/profile')}
                   >
-                    <User className="w-4 h-4" />
+                    <UserIcon className="w-4 h-4" />
                     <span>{user?.name}</span>
                   </div>
                   <Button
