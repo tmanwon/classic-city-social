@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { X, Star, Calendar, ExternalLink, Users, MapPin, UserCheck } from 'lucide-react';
-import { Event, Review } from '../models/mockData';
+import { Event } from '../models/eventSchema';
+import { Review } from '../models/reviewSchema';
 import { useAuth } from '../context/AuthContext';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
