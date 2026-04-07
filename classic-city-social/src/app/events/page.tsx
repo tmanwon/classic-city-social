@@ -149,23 +149,24 @@ export default function EventsPage() {
 
         return (
           {
-            id: Math.random().toString(36).substr(2, 9),
+            id: event.id,
             title: event.name,
             description: event.description || "",
             date: event.dates.start.localDate,
             time: event.dates.start.localTime,
-            location: `${event._embedded.venues[0].name}`,
+            location: `${event._embedded.venues[0].address.line1}, ${event._embedded.venues[0].city.name}, ${event._embedded.venues[0].state.stateCode} ${event._embedded.venues[0].postalCode}`,
+            venue: `${event._embedded.venues[0].name}`,
             coordinates: {
               lat: event._embedded.venues[0].location.latitude,
               lng: event._embedded.venues[0].location.longitude,
             },
             category: event.classifications[0].segment.name,
             imageUrl: maxResImg.url || 'https://images.unsplash.com/photo-1672841821756-fc04525771c2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb25jZXJ0JTIwbXVzaWMlMjBmZXN0aXZhbCUyMGNyb3dkfGVufDF8fHx8MTc3Mzg2ODYyMXww&ixlib=rb-4.1.0&q=80&w=1080',
-            venue: event._embedded.venues[0].name,
-            price: event.priceRanges ? `$${event.priceRanges[0].min}+` : "N/A",
+            price: event.priceRanges ? `$${event.priceRanges[0].min}+` : "Ticketmaster",
             attendees: [],
             reviews: [],
             createdBy: null,
+            url: event.url,
             source: 'ticketmaster',
           }
         );
@@ -195,6 +196,7 @@ export default function EventsPage() {
       date: eventData.date!,
       time: eventData.time!,
       location: eventData.location!,
+      coordinates: eventData.coordinates!,
       category: eventData.category!,
       imageUrl: eventData.imageUrl || 'https://images.unsplash.com/photo-1672841821756-fc04525771c2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb25jZXJ0JTIwbXVzaWMlMjBmZXN0aXZhbCUyMGNyb3dkfGVufDF8fHx8MTc3Mzg2ODYyMXww&ixlib=rb-4.1.0&q=80&w=1080',
       venue: eventData.venue,
@@ -202,7 +204,7 @@ export default function EventsPage() {
       attendees: [],
       reviews: [],
       createdBy: user.id,
-      source: 'user',
+      source: 'ClassicCitySocial',
     };
 
     setEvents([newEvent, ...events]);
@@ -244,6 +246,19 @@ export default function EventsPage() {
     if (!user) {
       toast.error('Please log in to attend events');
       return;
+    }
+
+    const selected_event = events.find((e) => e.id === id)
+
+    if (selected_event?.source === 'ticketmaster') {
+      //toast.error('You cannot attend events from Ticketmaster');
+      if (!selected_event.attendees.includes(user.id)) {
+        if (selected_event.url) {
+          window.open(selected_event.url.toString(), '_blank');
+        } else {
+          toast.error('No URL found for this event');
+        }
+      }
     }
 
     setEvents(

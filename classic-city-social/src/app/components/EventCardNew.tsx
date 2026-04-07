@@ -1,6 +1,6 @@
 import { color, motion } from 'motion/react';
 import { Calendar, MapPin, Users, Star, ExternalLink, UserCheck } from 'lucide-react';
-import { Event } from '../models/mockData';
+import { Event } from '../models/eventSchema';
 import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -102,7 +102,7 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
             <Badge className={`${categoryColor} text-white border-0 shadow-md backdrop-blur-md`}>
               {event.category}
             </Badge>
-            {event.source !== 'user' && (
+            {event.source !== 'ClassicCitySocial' && (
               <Badge variant="secondary" className="bg-black/60 backdrop-blur-md text-white border-0 shadow-md">
                 {event.source}
               </Badge>
@@ -152,7 +152,7 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
           <CardContent className="p-0 flex-1 z-20 flex flex-col gap-3">
             <div className="flex items-start gap-2 text-sm font-medium" style={{ color: textColor }}>
               <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 opacity-80" />
-              <span className="line-clamp-2 leading-snug">{event.location}</span>
+              <span className="line-clamp-2 leading-snug">{event.venue}</span>
             </div>
 
             <p className="text-sm line-clamp-2 leading-relaxed" style={{ color: mutedTextColor }}>
