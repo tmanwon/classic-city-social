@@ -2,14 +2,15 @@ import mongoose, { Schema, Model } from 'mongoose';
 import { ReviewSchema } from './reviewSchema';
 
 export type EventType = {
+  _id: string;
   title: string;
   description: string;
   date: string;
   time: string;
   location: string;
   coordinates: {
-    lat: string;
-    lng: string;
+    lat: number;
+    lng: number;
   };
   category: string;
   imageUrl: string;
@@ -33,8 +34,8 @@ const EventSchema = new Schema<EventType>(
     time: { type: String, required: true },
     location: { type: String, required: true },
     coordinates: {
-      lat: { type: String },
-      lng: { type: String },
+      lat: { type: Number },
+      lng: { type: Number },
     },
     category: { type: String, required: true },
     imageUrl: { type: String, required: true },
