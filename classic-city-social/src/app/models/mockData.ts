@@ -1,3 +1,8 @@
+import { Event } from './eventSchema';
+import { User } from './userSchema';
+import { Review } from './reviewSchema';
+
+/*
 export interface Event {
   id: string;
   title: string;
@@ -39,6 +44,7 @@ export interface Review {
   sentiment?: 'positive' | 'negative' | 'neutral';
   createdAt: string;
 }
+*/
 
 export interface AthensLocation {
   id: string;
@@ -113,6 +119,15 @@ export const mockEvents: Event[] = [
         comment: 'Incredible atmosphere! Go Dawgs!',
         sentiment: 'positive',
         createdAt: '2026-03-15T10:00:00Z',
+      },
+      {
+        id: 'r1b',
+        userId: 'user2',
+        userName: 'Alex Rivera',
+        rating: 4,
+        comment: 'Super exciting game but parking was tough.',
+        sentiment: 'positive',
+        createdAt: '2026-03-16T10:00:00Z',
       },
     ],
     createdBy: 'system',

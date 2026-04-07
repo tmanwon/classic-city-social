@@ -9,13 +9,20 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@types/leaflet": "^1.9.21",
     "class-variance-authority": "^0.7.1",
+    "leaflet": "^1.9.4",
     "lucide-react": "^1.0.1",
+    "mongoose": "^9.4.1",
     "motion": "^12.38.0",
     "next": "16.2.1",
+    "openai": "^6.33.0",
     "radix-ui": "^1.4.3",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "react-easy-crop": "^5.5.7",
+    "react-extract-colors": "^1.6.0",
+    "react-leaflet": "^5.0.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
     "toast": "^0.5.4"

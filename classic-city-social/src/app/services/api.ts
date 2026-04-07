@@ -1,4 +1,4 @@
-import { Event, Review } from '../data/mockData';
+import { Event, Review } from '../models/mockData';
 
 // Simulate API delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -6,14 +6,14 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 // Mock sentiment analysis
 export async function analyzeSentiment(text: string): Promise<'positive' | 'negative' | 'neutral'> {
   await delay(300);
-  
+
   const positiveWords = ['great', 'amazing', 'excellent', 'wonderful', 'awesome', 'love', 'fantastic', 'incredible'];
   const negativeWords = ['bad', 'terrible', 'awful', 'horrible', 'disappointing', 'poor', 'worst'];
-  
+
   const lowerText = text.toLowerCase();
   const hasPositive = positiveWords.some(word => lowerText.includes(word));
   const hasNegative = negativeWords.some(word => lowerText.includes(word));
-  
+
   if (hasPositive && !hasNegative) return 'positive';
   if (hasNegative && !hasPositive) return 'negative';
   return 'neutral';
@@ -22,7 +22,7 @@ export async function analyzeSentiment(text: string): Promise<'positive' | 'nega
 // Mock external events API (Eventbrite/Ticketmaster)
 export async function fetchExternalEvents(): Promise<Event[]> {
   await delay(800);
-  
+
   // Simulate API response
   return [
     {
@@ -69,11 +69,11 @@ export function calculateDistance(
 export function exportToGoogleCalendar(event: Event): string {
   const startDate = new Date(`${event.date}T${event.time}`);
   const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // Add 2 hours
-  
+
   const formatDate = (date: Date) => {
     return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
   };
-  
+
   const params = new URLSearchParams({
     action: 'TEMPLATE',
     text: event.title,
@@ -81,7 +81,7 @@ export function exportToGoogleCalendar(event: Event): string {
     details: event.description,
     location: event.location,
   });
-  
+
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
@@ -111,21 +111,21 @@ export async function getUserLocation(): Promise<{ lat: number; lng: number } | 
 // Generate sentiment summary for reviews
 export function generateSentimentSummary(reviews: Review[]): string {
   if (reviews.length === 0) return 'No reviews yet.';
-  
+
   const sentimentCounts = reviews.reduce((acc, review) => {
     const sentiment = review.sentiment || 'neutral';
     acc[sentiment] = (acc[sentiment] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
-  
+
   const avgRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
-  const dominant = Object.entries(sentimentCounts).sort(([,a], [,b]) => b - a)[0][0];
-  
+  const dominant = Object.entries(sentimentCounts).sort(([, a], [, b]) => b - a)[0][0];
+
   const summaries = {
     positive: `Most attendees had a great time! (${avgRating.toFixed(1)}/5 stars)`,
     negative: `Some concerns raised by attendees. (${avgRating.toFixed(1)}/5 stars)`,
     neutral: `Mixed reviews from attendees. (${avgRating.toFixed(1)}/5 stars)`,
   };
-  
+
   return summaries[dominant as keyof typeof summaries];
 }

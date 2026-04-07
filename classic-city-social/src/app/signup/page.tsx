@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import  Link  from 'next/link';
 import { motion } from 'motion/react';
 import { UserPlus, Mail, Lock, User } from 'lucide-react';
+import { Camera } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { toast } from 'sonner';
+import { ImageCropper } from '../components/ImageCropper';
 
 /**
  * Signup Page
@@ -22,6 +24,8 @@ export default function SignupPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [showCropperModal, setShowCropperModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
   /**
@@ -34,7 +38,7 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      await signup(email, password, name);
+      await signup(email, password, name, profileImage || undefined);
       toast.success('Account created successfully!');
       router.push('/events');
     } catch (error) {
@@ -54,7 +58,7 @@ export default function SignupPage() {
       >
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 shadow-2xl">
           {/* Header */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-6">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-red-600 rounded-full mb-4">
               <UserPlus className="w-8 h-8 text-white" />
             </div>
@@ -62,8 +66,30 @@ export default function SignupPage() {
             <p className="text-gray-300">Join the ClassicCitySocial community</p>
           </div>
 
+          {/* Profile Image Drag & Drop / Upload Preview */}
+          <div className="flex justify-center mb-8">
+            <div 
+              className="relative w-28 h-28 rounded-full border-2 border-dashed border-gray-400 bg-white/5 hover:bg-white/10 flex items-center justify-center cursor-pointer transition-colors group overflow-hidden"
+              onClick={() => setShowCropperModal(true)}
+            >
+              {profileImage ? (
+                <>
+                  <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+                    <Camera className="w-6 h-6 text-white" />
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center p-2 text-center">
+                  <Camera className="w-6 h-6 text-gray-400 mb-1 group-hover:text-white transition-colors" />
+                  <span className="text-[10px] text-gray-400 font-medium group-hover:text-white transition-colors">Add Photo</span>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Registration form with name, email, and password fields */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {/* Full name field */}
             <div className="space-y-2">
               <Label htmlFor="name" className="text-white">
@@ -159,6 +185,30 @@ export default function SignupPage() {
           </div>
         </div>
       </motion.div>
+
+      {/* Full-screen Cropper Modal Overlay */}
+      {showCropperModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-md bg-gray-900 rounded-2xl shadow-2xl overflow-hidden shadow-[0_0_50px_rgba(255,0,0,0.15)]"
+          >
+            <div className="p-4 bg-gray-800 border-b border-gray-700">
+              <h3 className="text-white text-lg font-semibold text-center">Crop Profile Picture</h3>
+            </div>
+            <div className="p-4">
+              <ImageCropper 
+                onCropComplete={(croppedImage) => {
+                  setProfileImage(croppedImage);
+                  setShowCropperModal(false);
+                }}
+                onCancel={() => setShowCropperModal(false)}
+              />
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

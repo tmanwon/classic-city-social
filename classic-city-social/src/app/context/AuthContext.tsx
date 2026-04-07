@@ -7,6 +7,10 @@ interface User {
   email: string;
   name: string;
   interests: string[];
+  imageUrl?: string;
+  friends?: string[];
+  myEvents?: string[];
+  eventsAttending?: string[];
   location?: {
     lat: number;
     lng: number;
@@ -16,10 +20,11 @@ interface User {
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, name: string) => Promise<void>;
+  signup: (email: string, password: string, name: string, imageUrl?: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
   updateUserInterests: (interests: string[]) => void;
+  updateUserProfile: (updates: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -56,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const signup = async (email: string, password: string, name: string) => {
+  const signup = async (email: string, password: string, name: string, imageUrl?: string) => {
     // Simulate API call
     return new Promise<void>((resolve, reject) => {
       setTimeout(() => {
@@ -65,6 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             id: Math.random().toString(36).substr(2, 9),
             email,
             name,
+            imageUrl,
             interests: [],
           };
           setUser(newUser);
@@ -90,6 +96,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateUserProfile = (updates: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...updates };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -99,6 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         logout,
         isAuthenticated: !!user,
         updateUserInterests,
+        updateUserProfile,
       }}
     >
       {children}

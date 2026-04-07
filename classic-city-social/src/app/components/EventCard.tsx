@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { Calendar, MapPin, Users, Star, ExternalLink, UserCheck } from 'lucide-react';
-import { Event } from '../data/mockData';
+import { Event } from '../models/mockData';
 import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -36,7 +36,7 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
   };
 
   const categoryColor = categoryColors[event.category.toLowerCase()] || 'bg-gray-500';
-  
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -90,7 +90,7 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
 
         <CardContent className="flex-1 pb-3">
           <p className="text-sm text-gray-700 line-clamp-3 mb-3">{event.description}</p>
-          
+
           <div className="flex items-start gap-2 text-sm text-gray-600 mb-3">
             <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
             <span className="line-clamp-2">{event.location}</span>
@@ -128,7 +128,7 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
               <ExternalLink className="w-4 h-4 mr-2" />
               Details
             </Button>
-            
+
             {isAuthenticated && onAttend && (
               <Button
                 variant={isAttending ? "secondary" : "outline"}
