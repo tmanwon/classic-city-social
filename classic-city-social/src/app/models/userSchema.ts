@@ -1,6 +1,19 @@
-import mongoose, { Schema, InferSchemaType } from 'mongoose';
+import mongoose, { Schema, Model } from 'mongoose';
 
-const UserSchema = new Schema(
+export type UserType = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  friends?: string[];
+  imageUrl?: string;
+  myEvents?: string[];
+  eventsAttending?: string[];
+};
+
+export type UserDoc = mongoose.HydratedDocument<UserType>;
+
+const UserSchema = new Schema<UserType>(
   {
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
@@ -15,8 +28,8 @@ const UserSchema = new Schema(
 );
 
 // TypeScript type is inferred directly from the schema — no duplication
-export type User = InferSchemaType<typeof UserSchema>;
+export const User: Model<UserType> =
+  (mongoose.models.User as Model<UserType>) ||
+  mongoose.model<UserType>("User", UserSchema);
 
-const UserModel = mongoose.models.User || mongoose.model('User', UserSchema);
-
-export default UserModel;
+export default User;

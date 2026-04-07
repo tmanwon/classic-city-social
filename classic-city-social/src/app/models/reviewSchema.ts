@@ -1,6 +1,17 @@
-import { Schema, InferSchemaType } from 'mongoose';
+import mongoose, { Schema, Model } from 'mongoose';
 
-export const ReviewSchema = new Schema(
+export type ReviewType = {
+  userId: string;
+  userName: string;
+  rating: number;
+  comment: string;
+  sentiment: string;
+  createdAt: string;
+};
+
+export type ReviewDoc = mongoose.HydratedDocument<ReviewType>;
+
+export const ReviewSchema = new Schema<ReviewType>(
   {
     userId: { type: String, required: true },
     userName: { type: String, required: true },
@@ -12,4 +23,8 @@ export const ReviewSchema = new Schema(
   { _id: true }
 );
 
-export type Review = InferSchemaType<typeof ReviewSchema>;
+export const Review: Model<ReviewType> =
+  (mongoose.models.Review as Model<ReviewType>) ||
+  mongoose.model<ReviewType>("Review", ReviewSchema);
+
+export default Review;

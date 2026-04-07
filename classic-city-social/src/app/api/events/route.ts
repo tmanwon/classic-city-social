@@ -1,7 +1,7 @@
-import { NextResponse as Response } from 'next/server';
-// import { mongoose } from 'mongoose'; - add later when DB is set up
-import { mockEvents } from '../../data/mockData';
-import { Event } from '../../data/mockData';
+import { NextResponse, NextRequest } from "next/server";
+import connectMongoDB from '@/config/mongodb';
+import Event from "@/src/app/models/eventSchema";
+
 
 /*
  * Currently, these functions are implemented for mock data. Once the database is set up, we will replace the mock data with actual database queries using Mongoose.
@@ -15,48 +15,30 @@ import { Event } from '../../data/mockData';
  * - enum validator for event source: enum: ['user', 'ticketmaster', 'eventbrite', 'athens_data']
  */
 
+export const dynamic = "force-dynamic";
+
 // Read CRUD operation for events
-export async function GET() { return Response.json({ events : mockEvents }, { status: 200});}
+export async function GET() {
+    await connectMongoDB();
+    const events = await Event.find();
+    return new NextResponse(JSON.stringify({ events }), {
+        status: 200,
+        headers: {
+            "content-type": "application/json",
+        },
+    });
+}
 
 // Create CRUD operation for events
-export async function POST(request: Request) { // Request is the incoming request object from Next.js API route
-    const body = await request.json(); // body is the parsed JSON data from the request, which should contain the event details (either from a user or API source)
+export async function POST(request: NextRequest) { // Request is the incoming request object from Next.js API route
+    const { title, description, date, time, location, coordinates, category, imageUrl, venue, price, attendees, reviews, createdBy, url, source } = await request.json(); // body is the parsed JSON data from the request, which should contain the event details (either from a user or API source)
+    await connectMongoDB();
     // Create a new event object with a unique ID, attendees and reviews are initialized as empty because this is a new event. source is set to 'user' for now. 
-    const newEvent: Event = { ...body, id: Date.now().toString(), attendees: [], reviews: [], source: 'user' }; 
-    // Add the new event to the mockEvents array. Will be changed to a database insert operation once DB is set up.
-    mockEvents.push(newEvent);
+    const createdEvent = await Event.create({ title, description, date, time, location, coordinates, category, imageUrl, venue, price, attendees, reviews, createdBy, url, source });
     // Return the newly created event in the response with a 201 status code indicating successful creation
-    return Response.json({ event : newEvent }, { status: 201 }); 
+    return NextResponse.json(
+        { message: "Event created successfully", event: createdEvent },
+        { status: 201 }
+    );
 }
 
-// Update CRUD operation for events
-// with DB, will use findByIdAndUpdate
-export async function PUT(request: Request) { 
-    const body = await request.json(); // same as POST
-    const index = mockEvents.findIndex(event => event.id === body.id); // find the index of the event to update based on the ID provided in the request body
-    // if the event is not found, returns a 404 error response
-    if (index === -1) {
-        return Response.json({ error: 'Event not found' }, { status: 404 });
-    }        
-    // Update the event by merging existing data with request body - allows for partial updates as body does not need to contain all fields
-    // Something to consider when database is set up - we most likely will not want all fields to be updatable (source, createdBy, reviews)
-    mockEvents[index] = { ...mockEvents[index], ...body };    
-    // Return the updated event in the response with a 200 status code
-    return Response.json({ event : mockEvents[index] }, { status: 200 }); 
-}
-
-// Delete CRUD operation for events
-// with DB, will use findByIdAndDelete
-export async function DELETE(request: Request) { 
-    const { id } = await request.json(); // shorthand to extract event ID from the request body
-    // get the index of event to be deleted
-    const index = mockEvents.findIndex(event => event.id === id);
-    // if the event is not found, returns a 404 error response
-    if (index === -1) {
-        return Response.json({ error: 'Event not found' }, { status: 404 });
-    }
-    // Removes the event from mockEvents that is at {index} and removes just 1 element
-    mockEvents.splice(index, 1);
-    // Return a success message in the response with a 200 status code
-    return Response.json({ message: 'Event deleted successfully' }, { status: 200 }); 
-}
