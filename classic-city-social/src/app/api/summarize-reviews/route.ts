@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import { NextRequest, NextResponse } from "next/server";
 
 const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
 });
 
 export async function POST(req: NextRequest) {
@@ -32,10 +32,7 @@ Reviews:
 ${reviewText}
 
 Return:
-1. A 2-sentence overall summary
-2. 3 common pros
-3. 3 common cons
-4. Overall sentiment: Positive, Mixed, or Negative
+A 2-sentence overall summary of pros (if any) and cons (if any), in a format like (for example): "Attendees generally enjoyed the event, highlighting the great atmosphere and music. However, some noted that the venue was a bit small and crowded."
 
 Only use information supported by the reviews.
 `,
