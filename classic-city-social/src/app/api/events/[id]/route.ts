@@ -20,18 +20,19 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 }
 
 // Update CRUD operation for events by id
-export async function PUT(request: NextRequest) {
-    const body = await request.json(); // same as POST
-    const index = mockEvents.findIndex(event => event.id === body.id); // find the index of the event to update based on the ID provided in the request body
-    // if the event is not found, returns a 404 error response
-    if (index === -1) {
-        return Response.json({ error: 'Event not found' }, { status: 404 });
+export async function PUT(request: NextRequest, { params }: RouteParams) {
+    const { id } = await params;
+    const body = await request.json();
+
+    await connectMongoDB();
+    
+    const updatedEvent = await Event.findByIdAndUpdate(id, body, { new: true });
+
+    if (!updatedEvent) {
+        return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
-    // Update the event by merging existing data with request body - allows for partial updates as body does not need to contain all fields
-    // Something to consider when database is set up - we most likely will not want all fields to be updatable (source, createdBy, reviews)
-    mockEvents[index] = { ...mockEvents[index], ...body };
-    // Return the updated event in the response with a 200 status code
-    return NextResponse.json({ event: mockEvents[index] }, { status: 200 });
+
+    return NextResponse.json({ event: updatedEvent }, { status: 200 });
 }
 
 // Delete CRUD operation for events by id
