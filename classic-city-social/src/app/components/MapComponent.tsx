@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Event } from '../models/eventSchema';
+import { EventResponse } from '../models/eventSchema';
 import { EventCard } from './EventCardNew';
 
 // Fix for default marker icons in Leaflet with webpack/Next.js
@@ -16,12 +16,12 @@ L.Icon.Default.mergeOptions({
 });
 
 interface MapComponentProps {
-  events: Event[];
-  onEventClick: (event: Event) => void;
+  events: EventResponse[];
+  onEventClick: (event: EventResponse) => void;
 }
 
 // Helper component to adjust map bounds to fit all markers
-function MapBounds({ events }: { events: Event[] }) {
+function MapBounds({ events }: { events: EventResponse[] }) {
   const map = useMap();
 
   useEffect(() => {
@@ -39,8 +39,35 @@ export default function MapComponent({ events, onEventClick }: MapComponentProps
   const defaultCenter: [number, number] = [33.9519, -83.3576];
 
   const eventsWithCoords = events.filter(e => e.coordinates);
+  
+  // Apply a tiny visual jitter to markers that share the exact same coordinates so they don't overlap completely
+  const processedEvents = eventsWithCoords.map((event, _, array) => {
+    const sameLocs = array.filter(e => 
+      e.coordinates?.lat === event.coordinates?.lat && 
+      e.coordinates?.lng === event.coordinates?.lng
+    );
+    if (sameLocs.length <= 1) return event;
+    
+    const duplicateIndex = sameLocs.findIndex(e => e._id === event._id);
+    if (duplicateIndex === 0) return event;
+    
+    // Create a small spiral offset (approx 0.00015 degrees ~= 15 meters)
+    const radius = 0.00015 * duplicateIndex;
+    const angle = duplicateIndex * 1.5; // offset angle for some spiraling
+    
+    return {
+      ...event,
+      coordinates: {
+        ...event.coordinates,
+        lat: Number(event.coordinates!.lat!) + radius * Math.cos(angle),
+        lng: Number(event.coordinates!.lng!) + radius * Math.sin(angle)
+      }
+    };
+  });
 
-  if (eventsWithCoords.length === 0) {
+  console.log('Events with coords:', processedEvents.length);
+
+  if (processedEvents.length === 0) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-500">
         No events with location data available
@@ -59,12 +86,12 @@ export default function MapComponent({ events, onEventClick }: MapComponentProps
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
-      <MapBounds events={eventsWithCoords} />
+      <MapBounds events={processedEvents} />
 
-      {eventsWithCoords.map((event) => (
+      {processedEvents.map((event) => (
         <Marker
-          key={event.id}
-          position={[event.coordinates!.lat, event.coordinates!.lng]}
+          key={event._id}
+          position={[event.coordinates!.lat!, event.coordinates!.lng!]}
           eventHandlers={{
             click: () => onEventClick(event),
             mouseover: (e: L.LeafletEvent) => e.target.openPopup(),

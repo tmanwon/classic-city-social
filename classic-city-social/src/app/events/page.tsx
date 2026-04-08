@@ -216,7 +216,7 @@ export default function EventsPage() {
           )
         });
 
-        setEvents(events => [...backend_data, ...tmDupeFilteredEvents, ...events]);
+        setEvents([...backend_data, ...tmDupeFilteredEvents]);
       });
     });
   }
@@ -264,12 +264,37 @@ export default function EventsPage() {
   /**
    * Updates an existing event with new data
    */
-  const handleUpdateEvent = (eventData: Partial<EventResponse>) => {
+  const handleUpdateEvent = async (eventData: Partial<EventResponse>) => {
     if (!editingEvent) return;
+
+    const response = await fetch(`/api/events/${editingEvent._id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(
+        {
+          attendees: editingEvent.attendees,
+          title: eventData.title!,
+          tmid: editingEvent.tmid,
+          description: eventData.description!,
+          date: eventData.date!,
+          time: eventData.time!,
+          location: eventData.location!,
+          coordinates: eventData.coordinates!,
+          category: eventData.category!,
+          imageUrl: eventData.imageUrl,
+          venue: eventData.venue!,
+          price: eventData.price!,
+          reviews: editingEvent.reviews,
+          createdBy: editingEvent.createdBy,
+          url: editingEvent.url,
+          source: editingEvent.source,
+        }),
+    });
+    const updatedEvent: EventResponse = (await response.json()).event;
 
     const updatedEvents = events.map((event) =>
       event._id === editingEvent._id
-        ? { ...event, ...eventData }
+        ? { ...event, ...updatedEvent }
         : event
     );
 

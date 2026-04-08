@@ -27,6 +27,14 @@ interface EventDetailsDialogProps {
   onAttend: (eventId: string) => void;
 }
 
+const format12Hour = (timeStr?: string) => {
+  if (!timeStr) return '';
+  const [h, m] = timeStr.split(':');
+  if (!h || !m) return timeStr;
+  const hour = parseInt(h, 10);
+  return `${hour % 12 || 12}:${m} ${hour >= 12 ? 'PM' : 'AM'}`;
+};
+
 export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: EventDetailsDialogProps) {
   const { user, isAuthenticated } = useAuth();
   const [rating, setRating] = useState(5);
@@ -182,7 +190,7 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
           <div className="flex flex-wrap gap-x-8 gap-y-4 mb-10 text-lg font-medium">
             <div className="flex items-center gap-2.5" style={{ color: mutedTextColor }}>
               <Calendar className="w-6 h-6 opacity-80" />
-              <span>{new Date(event.date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} at {event.time}</span>
+              <span>{new Date(event.date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} at {format12Hour(event.time)}</span>
             </div>
             <div className="flex items-center gap-2.5" style={{ color: mutedTextColor }}>
               <Users className="w-6 h-6 opacity-80" />

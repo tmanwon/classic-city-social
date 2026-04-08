@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Map as MapIcon, ChevronRight } from 'lucide-react';
-import { Event } from '../models/mockData';
+import { EventResponse } from '../models/eventSchema';
 import dynamic from 'next/dynamic';
 import { EventDetailsDialog } from './EventDetailsDialog';
 
@@ -16,12 +16,12 @@ const MapComponent = dynamic(() => import('./MapComponent'), {
 interface MapSlideOverProps {
   isOpen: boolean;
   onClose: () => void;
-  events: Event[];
+  events: EventResponse[];
   onAttendEvent?: (id: string) => void;
 }
 
 export function MapSlideOver({ isOpen, onClose, events, onAttendEvent }: MapSlideOverProps) {
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<EventResponse | null>(null);
 
   // Close when pressing escape
   useEffect(() => {
