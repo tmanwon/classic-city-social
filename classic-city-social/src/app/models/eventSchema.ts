@@ -52,7 +52,7 @@ const EventSchema = new Schema<EventType>(
   {
     title: { type: String, required: true },
     tmid: { type: String, default: null },
-    description: { type: String, required: true },
+    description: { type: String, default: null },
     date: { type: String, required: true },
     time: { type: String, required: true },
     location: { type: String, required: true },

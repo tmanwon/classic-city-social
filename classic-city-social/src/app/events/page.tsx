@@ -287,136 +287,102 @@ export default function EventsPage() {
     toast.success('Event deleted');
   };
 
-  /**
-   * Toggle user's attendance for an event
-   * Adds or removes user ID from attendees list
-   */
   const handleAttendEvent = async (id: string) => {
     if (!user) {
-      toast.error('Please log in to attend events');
+      toast.error('You must be logged in to attend events');
       return;
     }
 
-    let eventExistsInDB = false;
+    const selected_event = events.find((e) => e._id === id);
 
-    // Check if there is an event in the database with the same id
-    const response = await fetch(`/api/events/${id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
-    if (response.ok) {
-      eventExistsInDB = true;
-    } else {
-      eventExistsInDB = false;
-    }
-
-    if (eventExistsInDB) {
-
-      // Update the event in the database
-      const db_event = events.find((e) => e._id === id);
-      if (db_event?.attendees.includes(user.id)) { // Remove user from attendees list
-        const response = await fetch(`/api/events/${id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            attendees: events.find((e) => e._id === id)?.attendees.filter((userId) => userId !== user.id),
-          }),
-        });
-      } else { // Add user to attendees list
-        const response = await fetch(`/api/events/${id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            attendees: [...events.find((e) => e._id === id)!.attendees, user.id],
-          }),
-        });
-
-      }
-
-      const updated_event = (await response.json()).event;
-
-      setEvents((events) => {
-        return events.map((event) => {
-          if (event._id === id) {
-            return updated_event;
-          }
-          return event;
-        })
-      }
-      );
-
-      const event = events.find((e) => e._id === id);
-      const isCurrentlyAttending = event?.attendees.includes(user.id);
-
-      toast.success(isCurrentlyAttending ? 'Removed from attending list' : 'Marked as attending!');
-    } else {
-      // Event is from ticketmaster, so we'll add it to the database formally to get enhanced social features from our platform
-      const event = events.find((e) => e._id === id);
-      if (event?.source === 'ticketmaster') {
-        if (!event.attendees.includes(user.id)) {
-          if (event.url) {
-            window.open(event.url.toString(), '_blank');
-          } else {
-            toast.error('No URL found for this event');
-          }
-        }
-      }
-    }
-    /*
-    console.log(eventExistsInDB);
-    const selected_event: EventResponse = (await response.json()).event;
-
-    if (selected_event === undefined) {
+    if (!selected_event) {
       toast.error('Event not found');
+      return
+    }
+
+    const isPureTicketMasterEvent = selected_event.tmid === selected_event._id;
+
+    if (isPureTicketMasterEvent) {
+      const { _id, ...eventWithoutId } = selected_event;
+
+      const newBackendEventData: EventType = {
+        tmid: selected_event.tmid,
+        title: selected_event.title,
+        description: "",
+        date: selected_event.date,
+        time: selected_event.time,
+        location: selected_event.location,
+        coordinates: selected_event.coordinates,
+        category: selected_event.category,
+        imageUrl: selected_event.imageUrl,
+        venue: selected_event.venue,
+        price: selected_event.price,
+        attendees: [user.id],
+        reviews: selected_event.reviews,
+        createdBy: selected_event.createdBy,
+        url: selected_event.url,
+        source: selected_event.source,
+      };
+
+      try {
+        const response = await fetch('/api/events', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newBackendEventData),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to save to backend:' + response.statusText);
+        }
+
+        const data = await response.json();
+        const createdEvent: EventResponse = data.event;
+
+        // Replace the old Ticketmaster event with the newly backendified one
+        setEvents(events.map(e => e._id === id ? createdEvent : e));
+        toast.success("Marked as attending!");
+
+        if (selectedEvent?._id === id) {
+          setSelectedEvent(createdEvent);
+        }
+      } catch (error) {
+        console.error('Error saving Ticketmaster event to DB:', error);
+        toast.error("Failed to mark attendance");
+      }
       return;
     }
 
+    // Standard attend/unattend for events already existing in our DB
+    const isAttending = selected_event.attendees.includes(user.id);
+    const updatedAttendees = isAttending
+      ? selected_event.attendees.filter(userId => userId !== user.id)
+      : [...selected_event.attendees, user.id];
 
+    try {
+      const response = await fetch(`/api/events/${selected_event._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ attendees: updatedAttendees }),
+      });
 
-        const selected_event = events.find((e) => e._id === id)
-    
-        if (selected_event === undefined) {
-    
-        }
-    
-        if (selected_event?.source === 'ticketmaster') {
-          //toast.error('You cannot attend events from Ticketmaster');
-          if (!selected_event.attendees.includes(user.id)) {
-            if (selected_event.url) {
-              window.open(selected_event.url.toString(), '_blank');
-            } else {
-              toast.error('No URL found for this event');
-            }
-          }
-        }
-    
-        setEvents(
-          events.map((event) => {
-            if (event._id === id) {
-              const isAttending = event.attendees.includes(user.id);
-              return {
-                ...event,
-                attendees: isAttending
-                  ? event.attendees.filter((userId) => userId !== user.id)
-                  : [...event.attendees, user.id],
-              };
-            }
-            return event;
-          })
-        );
-    
-        const event = events.find((e) => e._id === id);
-        const isCurrentlyAttending = event?.attendees.includes(user.id);
-    
-        toast.success(isCurrentlyAttending ? 'Removed from attending list' : 'Marked as attending!');
-        */
+      if (!response.ok) {
+        throw new Error('Failed to update event attendance');
+      }
+
+      const data = await response.json();
+      const updatedEvent: EventResponse = data.event;
+
+      setEvents(events.map(e => e._id === id ? updatedEvent : e));
+      toast.success(isAttending ? 'Removed from attending list' : 'Marked as attending!');
+
+      if (selectedEvent?._id === id) {
+        setSelectedEvent(updatedEvent);
+      }
+    } catch (error) {
+      console.error('Error updating attendance:', error);
+      toast.error("Failed to update attendance");
+    }
+
   };
 
   /**
