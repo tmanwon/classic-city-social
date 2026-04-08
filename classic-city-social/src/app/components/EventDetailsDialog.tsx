@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { X, Star, Calendar, ExternalLink, Users, MapPin, UserCheck } from 'lucide-react';
-import { Event } from '../models/eventSchema';
+import { EventResponse } from '../models/eventSchema';
 import { Review } from '../models/reviewSchema';
 import { useAuth } from '../context/AuthContext';
 import { Button } from './ui/button';
@@ -15,13 +15,13 @@ import Image from 'next/image';
 import { useExtractColors } from 'react-extract-colors';
 import dynamic from 'next/dynamic';
 
-const MiniMap = dynamic(() => import('./MiniMapComponent'), { 
-  ssr: false, 
-  loading: () => <div className="w-full h-full bg-white/10 animate-pulse" /> 
+const MiniMap = dynamic(() => import('./MiniMapComponent'), {
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-white/10 animate-pulse" />
 });
 
 interface EventDetailsDialogProps {
-  event: Event;
+  event: EventResponse;
   onClose: () => void;
   onAddReview: (eventId: string, review: Review) => void;
   onAttend: (eventId: string) => void;
@@ -45,7 +45,7 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
   });
 
   const [domColor, setDomColor] = useState<string>('#ffffff');
-  
+
   useEffect(() => {
     if (!loading && colors && colors.length > 0) {
       setDomColor(colors[0]);
@@ -139,7 +139,7 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 md:p-8">
-      <div 
+      <div
         className="relative rounded-3xl max-w-5xl w-full max-h-[95vh] overflow-y-auto shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-colors duration-700 border border-white/10"
         style={{ backgroundColor: domColor, color: textColor }}
       >
@@ -152,10 +152,10 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
             className="w-full h-full object-cover"
             priority
           />
-          <div 
+          <div
             className="absolute inset-0 h-full w-full"
-            style={{ 
-              background: `linear-gradient(to top, rgba(${rgbDom}, 1) 0%, rgba(${rgbDom}, 0.95) 15%, rgba(${rgbDom}, 0.6) 40%, rgba(${rgbDom}, 0) 100%)` 
+            style={{
+              background: `linear-gradient(to top, rgba(${rgbDom}, 1) 0%, rgba(${rgbDom}, 0.95) 15%, rgba(${rgbDom}, 0.6) 40%, rgba(${rgbDom}, 0) 100%)`
             }}
           />
           <button
@@ -165,7 +165,7 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
           >
             <X className="w-6 h-6" />
           </button>
-          
+
           <div className="absolute top-6 left-6 z-20 flex gap-2">
             <Badge className="text-white font-bold tracking-wide text-sm px-4 py-1.5 shadow-md border-0" style={{ backgroundColor: isLightText ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)' }}>
               {event.category}
@@ -198,7 +198,7 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
           <div className="flex flex-wrap gap-4 mb-10 border-b pb-10" style={{ borderColor }}>
             {isAuthenticated && (
               <Button
-                onClick={() => onAttend(event.id)}
+                onClick={() => onAttend(event._id)}
                 className={`gap-2 h-14 px-8 rounded-2xl text-lg font-bold transition-all shadow-lg ${isAttending ? 'opacity-90' : 'hover:-translate-y-1'}`}
                 style={{
                   backgroundColor: isLightText ? (isAttending ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.95)') : (isAttending ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.85)'),
@@ -209,19 +209,19 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
                 {isAttending ? 'Attending' : 'Mark Attending'}
               </Button>
             )}
-            <Button 
-                onClick={handleExportToCalendar} 
-                className="gap-2 h-14 px-8 rounded-2xl text-lg font-semibold border-2 bg-transparent transition-colors hover:bg-black/5"
-                style={{ color: textColor, borderColor: isLightText ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}
+            <Button
+              onClick={handleExportToCalendar}
+              className="gap-2 h-14 px-8 rounded-2xl text-lg font-semibold border-2 bg-transparent transition-colors hover:bg-black/5"
+              style={{ color: textColor, borderColor: isLightText ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}
             >
               <ExternalLink className="w-5 h-5" />
               Add to Google Calendar
             </Button>
             {event.source === 'ticketmaster' && event.url && (
-              <Button 
-                  onClick={() => window.open(event.url as string, '_blank', 'noopener,noreferrer')} 
-                  className="gap-2 h-14 px-8 rounded-2xl text-lg font-bold transition-all shadow-lg hover:-translate-y-1 text-white border-0"
-                  style={{ backgroundColor: '#026cdf' }}
+              <Button
+                onClick={() => window.open(event.url as string, '_blank', 'noopener,noreferrer')}
+                className="gap-2 h-14 px-8 rounded-2xl text-lg font-bold transition-all shadow-lg hover:-translate-y-1 text-white border-0"
+                style={{ backgroundColor: '#026cdf' }}
               >
                 <ExternalLink className="w-5 h-5" />
                 Find Tickets
@@ -234,7 +234,7 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
               <section>
                 <h3 className="text-2xl font-bold mb-4 opacity-90 tracking-tight">About This Event</h3>
                 <p className="whitespace-pre-line text-lg leading-relaxed mix-blend-plus-lighter" style={{ color: mutedTextColor }}>
-                    {event.description}
+                  {event.description}
                 </p>
               </section>
 
@@ -252,7 +252,7 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
 
                 <div className="rounded-2xl border p-6 mb-8 backdrop-blur-md shadow-sm" style={{ borderColor, backgroundColor: panelBg }}>
                   <h3 className="text-lg font-bold mb-3 flex items-center gap-2 opacity-90">
-                     ✨ AI Review Summary
+                    ✨ AI Review Summary
                   </h3>
 
                   {summaryLoading && <p className="text-sm font-medium" style={{ color: mutedTextColor }}>Generating summary...</p>}
@@ -274,8 +274,8 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
                 {event.reviews.length > 0 && (
                   <div className="p-5 rounded-2xl mb-8 border border-blue-500/30 bg-blue-500/10 backdrop-blur-sm">
                     <p className="text-sm font-medium flex items-center gap-2">
-                       <span className="font-bold opacity-90">Sentiment Analysis:</span>
-                       <span style={{ color: mutedTextColor }}>{sentimentSummary}</span>
+                      <span className="font-bold opacity-90">Sentiment Analysis:</span>
+                      <span style={{ color: mutedTextColor }}>{sentimentSummary}</span>
                     </p>
                   </div>
                 )}
@@ -322,7 +322,7 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
                   </div>
                 ) : (
                   <p className="font-medium mb-8 p-4 rounded-xl text-center" style={{ backgroundColor: panelBg, color: mutedTextColor }}>
-                     Log in to add a review
+                    Log in to add a review
                   </p>
                 )}
 
@@ -351,26 +351,26 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
                 </div>
               </section>
             </div>
-            
+
             <div className="space-y-8">
-               {/* Location Side Panel */}
-               <div className="p-6 rounded-2xl border shadow-sm backdrop-blur-md flex flex-col gap-5" style={{ borderColor, backgroundColor: panelBg }}>
+              {/* Location Side Panel */}
+              <div className="p-6 rounded-2xl border shadow-sm backdrop-blur-md flex flex-col gap-5" style={{ borderColor, backgroundColor: panelBg }}>
+                <div>
+                  <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                    <MapPin className="w-6 h-6 opacity-80" /> Location
+                  </h3>
                   <div>
-                    <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                      <MapPin className="w-6 h-6 opacity-80" /> Location
-                    </h3>
-                    <div>
-                      <p className="font-bold text-lg mb-1">{event.venue}</p>
-                      <p className="font-medium text-base mix-blend-plus-lighter" style={{ color: mutedTextColor }}>{event.location}</p>
-                    </div>
+                    <p className="font-bold text-lg mb-1">{event.venue}</p>
+                    <p className="font-medium text-base mix-blend-plus-lighter" style={{ color: mutedTextColor }}>{event.location}</p>
                   </div>
-                  
-                  {event.coordinates?.lat != null && event.coordinates?.lng != null && (
-                    <div className="w-full aspect-square rounded-xl overflow-hidden border shadow-inner transition-opacity" style={{ borderColor: 'rgba(0,0,0,0.1)' }}>
-                      <MiniMap lat={event.coordinates.lat} lng={event.coordinates.lng} />
-                    </div>
-                  )}
-               </div>
+                </div>
+
+                {event.coordinates?.lat != null && event.coordinates?.lng != null && (
+                  <div className="w-full aspect-square rounded-xl overflow-hidden border shadow-inner transition-opacity" style={{ borderColor: 'rgba(0,0,0,0.1)' }}>
+                    <MiniMap lat={event.coordinates.lat} lng={event.coordinates.lng} />
+                  </div>
+                )}
+              </div>
 
               {event.attendees.length > 0 && (
                 <div className="p-6 rounded-2xl border shadow-sm backdrop-blur-md" style={{ borderColor, backgroundColor: panelBg }}>

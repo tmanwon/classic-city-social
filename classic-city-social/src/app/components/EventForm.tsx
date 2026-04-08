@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { X, MapPin, Loader2 } from 'lucide-react';
-import { Event } from '../models/eventSchema';
+import { EventResponse } from '../models/eventSchema';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -9,8 +9,8 @@ import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 interface EventFormProps {
-  event?: Event;
-  onSubmit: (event: Partial<Event>) => void;
+  event?: EventResponse;
+  onSubmit: (event: Partial<EventResponse>) => void;
   onCancel: () => void;
 }
 
@@ -21,8 +21,8 @@ export function EventForm({ event, onSubmit, onCancel }: EventFormProps) {
     date: event?.date || '',
     time: event?.time || '',
     coordinates: {
-      lat: event?.coordinates?.lat,
-      lng: event?.coordinates?.lng
+      lat: event?.coordinates?.lat || 0,
+      lng: event?.coordinates?.lng || 0
     },
     location: event?.location || '',
     category: event?.category || 'music',

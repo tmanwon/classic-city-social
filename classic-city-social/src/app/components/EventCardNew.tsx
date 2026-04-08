@@ -1,6 +1,6 @@
 import { color, motion } from 'motion/react';
 import { Calendar, MapPin, Users, Star, ExternalLink, UserCheck } from 'lucide-react';
-import { Event } from '../models/eventSchema';
+import { EventResponse } from '../models/eventSchema';
 import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -12,11 +12,11 @@ import { Londrina_Solid } from 'next/font/google';
 import { useState, useEffect } from 'react';
 
 interface EventCardProps {
-  event: Event;
-  onEdit?: (event: Event) => void;
+  event: EventResponse;
+  onEdit?: (event: EventResponse) => void;
   onDelete?: (id: string) => void;
   onAttend?: (id: string) => void;
-  onViewDetails?: (event: Event) => void;
+  onViewDetails?: (event: EventResponse) => void;
 }
 
 export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: EventCardProps) {
@@ -209,7 +209,7 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
                     backgroundColor: isLightText ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)',
                     color: isLightText ? domColor : '#ffffff',
                   }}
-                  onClick={() => onAttend(event.id)}
+                  onClick={() => onAttend(event._id)}
                 >
                   <UserCheck className="w-4 h-4 mr-2" />
                   {isAttending ? 'Attending' : 'Attend'}
@@ -232,7 +232,7 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
                   variant="destructive"
                   size="sm"
                   className="flex-1 rounded-xl h-9 hover:bg-red-600"
-                  onClick={() => onDelete?.(event.id)}
+                  onClick={() => onDelete?.(event._id)}
                 >
                   Delete
                 </Button>

@@ -10,9 +10,14 @@ type RouteParams = {
 export async function GET(_request: NextRequest, { params }: RouteParams) {
     const { id } = await params;
     await connectMongoDB();
-    const event = await Event.findOne({ _id: id });
+    let event = null;
+    try {
+        event = await Event.findOne({ _id: id });
+    } catch (error) {
+        return NextResponse.json({ error: 'Event ID is invalid format' }, { status: 500 });
+    }
 
-    if (!event) {
+    if (event === null) {
         return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
@@ -25,7 +30,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const body = await request.json();
 
     await connectMongoDB();
-    
+
     const updatedEvent = await Event.findByIdAndUpdate(id, body, { new: true });
 
     if (!updatedEvent) {
