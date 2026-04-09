@@ -39,22 +39,22 @@ export default function MapComponent({ events, onEventClick }: MapComponentProps
   const defaultCenter: [number, number] = [33.9519, -83.3576];
 
   const eventsWithCoords = events.filter(e => e.coordinates);
-  
+
   // Apply a tiny visual jitter to markers that share the exact same coordinates so they don't overlap completely
   const processedEvents = eventsWithCoords.map((event, _, array) => {
-    const sameLocs = array.filter(e => 
-      e.coordinates?.lat === event.coordinates?.lat && 
+    const sameLocs = array.filter(e =>
+      e.coordinates?.lat === event.coordinates?.lat &&
       e.coordinates?.lng === event.coordinates?.lng
     );
     if (sameLocs.length <= 1) return event;
-    
+
     const duplicateIndex = sameLocs.findIndex(e => e._id === event._id);
     if (duplicateIndex === 0) return event;
-    
+
     // Create a small spiral offset (approx 0.00015 degrees ~= 15 meters)
     const radius = 0.00015 * duplicateIndex;
     const angle = duplicateIndex * 1.5; // offset angle for some spiraling
-    
+
     return {
       ...event,
       coordinates: {

@@ -6,7 +6,21 @@ export type UserType = {
   email: string;
   password: string;
   friends?: string[];
-  imageUrl?: string;
+  imageUrl?: string | null;
+  interests?: string[];
+  myEvents?: string[];
+  eventsAttending?: string[];
+};
+
+export type UserResponse = {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  friends?: string[];
+  imageUrl?: string | null;
+  interests?: string[];
   myEvents?: string[];
   eventsAttending?: string[];
 };
@@ -20,7 +34,8 @@ const UserSchema = new Schema<UserType>(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     friends: { type: [String], default: [] },
-    imageUrl: { type: String },
+    imageUrl: { type: String, default: null },
+    interests: { type: [String], default: [] },
     myEvents: { type: [String], default: [] },
     eventsAttending: { type: [String], default: [] },
   },

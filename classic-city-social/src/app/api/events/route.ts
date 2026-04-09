@@ -3,18 +3,6 @@ import connectMongoDB from '@/config/mongodb';
 import Event from "@/src/app/models/eventSchema";
 
 
-/*
- * Currently, these functions are implemented for mock data. Once the database is set up, we will replace the mock data with actual database queries using Mongoose.
- * Considerations/Changes when DB is set up: 
- * - We will need to handle asynchronous operations with the database, so all functions will need to be async and use await for database queries.
- * - We will need to add error handling for database operations, such as try/catch blocks to catch any errors that may occur during database interactions and return 
- * appropriate error responses.
- * - For the POST and PUT operations, we will need to validate the incoming data before attempting to create or update an event in the database. 
- * This could involve checking for required fields, validating data types, and ensuring that the data meets any constraints defined in our Mongoose schema.
- * - Add necessary mongoDB connections and queries
- * - enum validator for event source: enum: ['user', 'ticketmaster', 'eventbrite', 'athens_data']
- */
-
 export const dynamic = "force-dynamic";
 
 // Read CRUD operation for events

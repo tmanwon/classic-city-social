@@ -16,7 +16,7 @@ export default function SplashPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-600 via-black to-gray-900 text-white relative overflow-hidden">
       {/* Background image overlay - subtle event photo background */}
-      <div 
+      <div
         className="absolute inset-0 opacity-20"
         style={{
           backgroundImage: 'url(https://creaturecomfortsbeer.com/wp-content/uploads/2021/03/CCBC_STPavillionPeopleStillInsta-3702-2.jpg)',
@@ -24,7 +24,7 @@ export default function SplashPage() {
           backgroundPosition: 'center',
         }}
       />
-      
+
       {/* Animated decorative blobs - add visual interest and movement */}
       <motion.div
         className="absolute top-20 left-10 w-20 h-20 bg-red-500 rounded-full opacity-30 blur-xl"
@@ -39,7 +39,7 @@ export default function SplashPage() {
           ease: 'easeInOut',
         }}
       />
-      
+
       <motion.div
         className="absolute bottom-20 right-10 w-32 h-32 bg-yellow-500 rounded-full opacity-20 blur-xl"
         animate={{
@@ -83,7 +83,7 @@ export default function SplashPage() {
               Discover concerts, games, festivals, and more around Athens & UGA
             </p>
           </div>
-          
+
           <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
             <Users className="w-8 h-8 mb-3 text-yellow-400" />
             <h3 className="text-lg mb-2">Find Event Buddies</h3>
@@ -91,7 +91,7 @@ export default function SplashPage() {
               Connect with others attending the same events
             </p>
           </div>
-          
+
           <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
             <Star className="w-8 h-8 mb-3 text-blue-400" />
             <h3 className="text-lg mb-2">Rate & Review</h3>
@@ -99,7 +99,7 @@ export default function SplashPage() {
               Share your experiences and read reviews from other students
             </p>
           </div>
-          
+
           <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
             <MapPin className="w-8 h-8 mb-3 text-green-400" />
             <h3 className="text-lg mb-2">Explore Athens</h3>

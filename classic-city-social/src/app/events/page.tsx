@@ -242,7 +242,7 @@ export default function EventsPage() {
       price: eventData.price!,
       attendees: [],
       reviews: [],
-      createdBy: user.id,
+      createdBy: user._id,
       url: null,
       source: 'ClassicCitySocial',
     };
@@ -342,7 +342,7 @@ export default function EventsPage() {
         imageUrl: selected_event.imageUrl,
         venue: selected_event.venue,
         price: selected_event.price,
-        attendees: [user.id],
+        attendees: [user._id],
         reviews: selected_event.reviews,
         createdBy: selected_event.createdBy,
         url: selected_event.url,
@@ -378,10 +378,10 @@ export default function EventsPage() {
     }
 
     // Standard attend/unattend for events already existing in our DB
-    const isAttending = selected_event.attendees.includes(user.id);
+    const isAttending = selected_event.attendees.includes(user._id);
     const updatedAttendees = isAttending
-      ? selected_event.attendees.filter(userId => userId !== user.id)
-      : [...selected_event.attendees, user.id];
+      ? selected_event.attendees.filter(userId => userId !== user._id)
+      : [...selected_event.attendees, user._id];
 
     try {
       const response = await fetch(`/api/events/${selected_event._id}`, {
@@ -487,7 +487,7 @@ export default function EventsPage() {
                     onClick={() => router.push('/profile')}
                   >
                     <UserIcon className="w-4 h-4" />
-                    <span>{user?.name}</span>
+                    <span>{user?.firstName + ' ' + user?.lastName}</span>
                   </div>
                   <Button
                     onClick={() => {

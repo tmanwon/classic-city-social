@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import  Link  from 'next/link';
+import Link from 'next/link';
 import { motion } from 'motion/react';
-import { UserPlus, Mail, Lock, User } from 'lucide-react';
+import { UserPlus, Mail, Lock, User, AlertCircle } from 'lucide-react';
 import { Camera } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
@@ -12,6 +12,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { toast } from 'sonner';
 import { ImageCropper } from '../components/ImageCropper';
+import { uploadImage } from '../utils/cdn';
 
 /**
  * Signup Page
@@ -27,6 +28,7 @@ export default function SignupPage() {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [showCropperModal, setShowCropperModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   /**
    * Handles form submission - creates new user account
@@ -37,12 +39,13 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
 
+    setErrorMessage('');
     try {
       await signup(email, password, name, profileImage || undefined);
       toast.success('Account created successfully!');
       router.push('/events');
-    } catch (error) {
-      toast.error('Failed to create account. Check your input.');
+    } catch (error: any) {
+      setErrorMessage(error.message || 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }
@@ -68,7 +71,7 @@ export default function SignupPage() {
 
           {/* Profile Image Drag & Drop / Upload Preview */}
           <div className="flex justify-center mb-8">
-            <div 
+            <div
               className="relative w-28 h-28 rounded-full border-2 border-dashed border-gray-400 bg-white/5 hover:bg-white/10 flex items-center justify-center cursor-pointer transition-colors group overflow-hidden"
               onClick={() => setShowCropperModal(true)}
             >
@@ -87,6 +90,17 @@ export default function SignupPage() {
               )}
             </div>
           </div>
+
+          {errorMessage && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              className="mb-8 p-4 rounded-xl bg-red-500/20 border border-red-500/50 flex items-center gap-3 text-red-200"
+            >
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              <p className="text-sm">{errorMessage}</p>
+            </motion.div>
+          )}
 
           {/* Registration form with name, email, and password fields */}
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -189,7 +203,7 @@ export default function SignupPage() {
       {/* Full-screen Cropper Modal Overlay */}
       {showCropperModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="w-full max-w-md bg-gray-900 rounded-2xl shadow-2xl overflow-hidden shadow-[0_0_50px_rgba(255,0,0,0.15)]"
@@ -198,10 +212,17 @@ export default function SignupPage() {
               <h3 className="text-white text-lg font-semibold text-center">Crop Profile Picture</h3>
             </div>
             <div className="p-4">
-              <ImageCropper 
-                onCropComplete={(croppedImage) => {
-                  setProfileImage(croppedImage);
-                  setShowCropperModal(false);
+              <ImageCropper
+                onCropComplete={async (croppedImage) => {
+                  const toastId = toast.loading('Uploading profile picture...');
+                  try {
+                    const url = await uploadImage(croppedImage);
+                    setProfileImage(url);
+                    toast.success('Profile picture ready!', { id: toastId });
+                    setShowCropperModal(false);
+                  } catch (error) {
+                    toast.error('Failed to upload image. Please try again.', { id: toastId });
+                  }
                 }}
                 onCancel={() => setShowCropperModal(false)}
               />

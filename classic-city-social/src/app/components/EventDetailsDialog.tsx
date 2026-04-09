@@ -78,7 +78,7 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
   const borderColor = isLightText ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)';
   const panelBg = isLightText ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.5)';
 
-  const isAttending = user ? event.attendees.includes(user.id) : false;
+  const isAttending = user ? event.attendees.includes(user._id) : false;
   const avgRating = event.reviews.length > 0
     ? event.reviews.reduce((sum, r) => sum + r.rating, 0) / event.reviews.length
     : 0;
@@ -118,15 +118,15 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
       const sentiment = await analyzeSentiment(comment);
       const newReview: Review = {
         id: Math.random().toString(36).substr(2, 9),
-        userId: user.id,
-        userName: user.name,
+        userId: user._id,
+        userName: user.firstName + ' ' + user.lastName,
         rating,
         comment,
         sentiment,
         createdAt: new Date().toISOString(),
       };
 
-      onAddReview(event.id, newReview);
+      onAddReview(event._id, newReview);
       setComment('');
       setRating(5);
       toast.success('Review added!');

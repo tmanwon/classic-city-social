@@ -21,7 +21,7 @@ interface EventCardProps {
 
 export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: EventCardProps) {
   const { user, isAuthenticated } = useAuth();
-  const isAttending = user ? event.attendees.includes(user.id) : false;
+  const isAttending = user ? event.attendees.includes(user._id) : false;
   const avgRating = event.reviews.length > 0
     ? event.reviews.reduce((sum, r) => sum + r.rating, 0) / event.reviews.length
     : 0;
@@ -217,7 +217,7 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
               )}
             </div>
 
-            {isAuthenticated && user && event.createdBy === user.id && (
+            {isAuthenticated && user && event.createdBy === user._id && (
               <div className="flex gap-3 w-full">
                 <Button
                   variant="outline"

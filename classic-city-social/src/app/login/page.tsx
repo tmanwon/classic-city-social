@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
-import { LogIn, Mail, Lock } from 'lucide-react';
+import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -22,6 +22,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   /**
    * Handles form submission - authenticates user via AuthContext
@@ -32,12 +33,13 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
 
+    setErrorMessage('');
     try {
       await login(email, password);
       toast.success('Welcome back!');
       router.push('/events');
-    } catch (error) {
-      toast.error('Invalid credentials. Try password with 6+ characters.');
+    } catch (error: any) {
+      setErrorMessage(error.message || 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }
@@ -59,6 +61,17 @@ export default function LoginPage() {
             <h2 className="text-3xl text-white mb-2">Welcome Back</h2>
             <p className="text-gray-300">Log in to discover events around Athens</p>
           </div>
+
+          {errorMessage && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              className="mb-6 p-4 rounded-xl bg-red-500/20 border border-red-500/50 flex items-center gap-3 text-red-200"
+            >
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              <p className="text-sm">{errorMessage}</p>
+            </motion.div>
+          )}
 
           {/* Login form with email and password fields */}
           <form onSubmit={handleSubmit} className="space-y-6">
