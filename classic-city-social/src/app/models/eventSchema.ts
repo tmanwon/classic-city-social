@@ -1,5 +1,4 @@
 import mongoose, { Schema, Model } from 'mongoose';
-import { ReviewSchema } from './reviewSchema';
 
 export type EventType = {
   title: string;
@@ -21,6 +20,8 @@ export type EventType = {
   createdBy: string;
   url: string | null;
   source: string;
+  aiSummary?: string | null;
+  aiSummaryUpdatedAt?: string | null;
 };
 
 export type EventResponse = {
@@ -44,7 +45,9 @@ export type EventResponse = {
   createdBy: string;
   url: string | null;
   source: string;
-}
+  aiSummary?: string | null;
+  aiSummaryUpdatedAt?: string | null;
+};
 
 export type EventDoc = mongoose.HydratedDocument<EventType>;
 
@@ -62,19 +65,25 @@ const EventSchema = new Schema<EventType>(
     },
     category: { type: String, required: true },
     imageUrl: { type: String, required: true },
-    venue: { type: String },
-    price: { type: String },
+    venue: { type: String, default: '' },
+    price: { type: String, default: '' },
     attendees: { type: [String], default: [] },
-    reviews: { type: [String], default: [] },
-    createdBy: { type: String },
+    reviews: { type: [String], default: [] }, // review _id values
+    createdBy: { type: String, default: '' },
     url: { type: String, default: null },
-    source: { type: String, enum: ['ClassicCitySocial', 'eventbrite', 'ticketmaster', 'athens_data'], required: true }
+    source: {
+      type: String,
+      enum: ['ClassicCitySocial', 'eventbrite', 'ticketmaster', 'athens_data'],
+      required: true,
+    },
+    aiSummary: { type: String, default: null },
+    aiSummaryUpdatedAt: { type: String, default: null },
   },
   { timestamps: true }
 );
 
 export const Event: Model<EventType> =
   (mongoose.models.Event as Model<EventType>) ||
-  mongoose.model<EventType>("Event", EventSchema);
+  mongoose.model<EventType>('Event', EventSchema);
 
 export default Event;
