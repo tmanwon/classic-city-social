@@ -79,7 +79,7 @@ Upload image to `/images/` and link it below:
 
 ** Goals for next week:**  
 -  Continue working accordingly and provide help if needed
--  
+-  Meet with the group and see what else is needed to work on.
 
 ---
 
