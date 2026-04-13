@@ -68,15 +68,17 @@ Upload image to `/images/` and link it below:
 ## Progress Summary - **Week #4:**  Monday, April 6th -  Sunday, April 12th
 
 ** What we completed this week:**  
-- 
--  
+- Continued working on the branch Database-and-Api's and spilt up more work during our weekly meeting. 
+-  We were able to connect the database and start connecting the Apis that use the database.
+-  implemented DB features for users, reviews, and started authentication and hashing
+-  Another groupmember began a friends page to provide more services in our website.
 
 ** Issues / blockers encountered:**  
 -  
 -  
 
 ** Goals for next week:**  
--  
+-  Continue working accordingly and provide help if needed
 -  
 
 ---
