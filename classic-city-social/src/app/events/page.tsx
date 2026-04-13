@@ -507,6 +507,13 @@ export default function EventsPage() {
                     <LogOut className="w-4 h-4" />
                     <span className="hidden md:inline">Logout</span>
                   </Button>
+                  <Button
+                  onClick={() => router.push('/friends')}
+                    variant="outline"
+                    className="border-white/30 text-black hover:bg-white/10 hover:text-white"
+                    >
+                      <span className="hidden md:inline">Friends</span>
+                  </Button>
                 </>
               ) : (
                 <>
