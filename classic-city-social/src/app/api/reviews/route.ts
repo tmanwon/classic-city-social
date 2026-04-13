@@ -4,6 +4,26 @@ import { connectToDB } from "@/lib/mongodb";
 import Event from "@/src/app/models/eventSchema";
 import Review from "@/src/app/models/reviewSchema";
 
+// GET /api/reviews?eventId=123 — fetch all reviews for an event
+export async function GET(req: NextRequest) {
+  try {
+    await connectToDB();
+
+    const { searchParams } = new URL(req.url);
+    const eventId = searchParams.get('eventId');
+
+    const query = eventId ? { eventId } : {};
+    const reviews = await Review.find(query).sort({ createdAt: -1 });
+
+    return NextResponse.json({ reviews }, { status: 200 });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error?.message || 'Failed to fetch reviews' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     await connectToDB();
