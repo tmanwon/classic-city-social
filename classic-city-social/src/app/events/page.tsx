@@ -152,7 +152,6 @@ export default function EventsPage() {
     // Ticketmaster API fetch (example, not fully implemented)
     try {
       const response = await fetch(`https://app.ticketmaster.com/discovery/v2/events.json?city=Athens&stateCode=GA&size=60&sort=date,asc&apikey=${process.env.NEXT_PUBLIC_TICKETMASTER_API_KEY}`);
-      //const response = await fetch('https://app.ticketmaster.com/discovery/v2/events.json?postalCode=30601&apikey=11qju5jEo2UfKLGYhgwWx2waKSz1AcBo');
       if (!response.ok) {
         throw new Error(`Error Code ${response.status}: Failed to fetch events from Ticketmaster: ${response.statusText}`);
       }
@@ -515,6 +514,13 @@ export default function EventsPage() {
                   >
                     <LogOut className="w-4 h-4" />
                     <span className="hidden md:inline">Logout</span>
+                  </Button>
+                  <Button
+                  onClick={() => router.push('/friends')}
+                    variant="outline"
+                    className="border-white/30 text-black hover:bg-white/10 hover:text-white"
+                    >
+                      <span className="hidden md:inline">Friends</span>
                   </Button>
                 </>
               ) : (

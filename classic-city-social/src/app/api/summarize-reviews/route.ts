@@ -1,32 +1,68 @@
 import OpenAI from "openai";
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
+import { connectToDB } from "@/lib/mongodb";
+import Event from "@/src/app/models/eventSchema";
+import Review from "@/src/app/models/reviewSchema";
 
 const client = new OpenAI({
-  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 export async function POST(req: NextRequest) {
   try {
-    const { eventTitle, reviews } = await req.json();
+    await connectToDB();
 
-    if (!eventTitle || !Array.isArray(reviews) || reviews.length === 0) {
+    const { eventId } = await req.json();
+
+    if (!eventId) {
       return NextResponse.json(
-        { error: "eventTitle and reviews are required" },
+        { error: "eventId is required" },
         { status: 400 }
       );
     }
 
-    // Keep requests smaller and cleaner
+    let event = null;
+
+    if (mongoose.Types.ObjectId.isValid(eventId)) {
+      event = await Event.findById(eventId);
+    }
+
+    if (!event) {
+      event = await Event.findOne({ tmid: eventId });
+    }
+
+    if (!event) {
+      return NextResponse.json(
+        { error: "Event not found" },
+        { status: 404 }
+      );
+    }
+
+    const eventKey = event._id.toString();
+
+    const reviews = await Review.find({ eventId: eventKey });
+
+    if (!reviews || reviews.length === 0) {
+      return NextResponse.json(
+        { error: "No reviews found for this event" },
+        { status: 400 }
+      );
+    }
+
     const reviewText = reviews
-      .filter((review: unknown) => typeof review === "string" && review.trim().length > 0)
+      .filter((review) => typeof review.comment === "string" && review.comment.trim().length > 0)
       .slice(0, 20)
-      .map((review: string, index: number) => `${index + 1}. ${review.trim()}`)
+      .map(
+        (review, index) =>
+          `${index + 1}. Rating: ${review.rating}/5 - ${review.comment.trim()}`
+      )
       .join("\n");
 
     const response = await client.responses.create({
       model: "gpt-5.4-mini",
       input: `
-Summarize these reviews for the event "${eventTitle}".
+Summarize these reviews for the event "${event.title}".
 
 Reviews:
 ${reviewText}
@@ -38,13 +74,19 @@ Only use information supported by the reviews.
 `,
     });
 
-    return NextResponse.json({
-      summary: response.output_text,
+    const summary = response.output_text;
+
+    await Event.findByIdAndUpdate(event._id, {
+      aiSummary: summary,
+      aiSummaryUpdatedAt: new Date().toISOString(),
     });
-  } catch (error) {
+
+    return NextResponse.json({ summary });
+  } catch (error: any) {
     console.error("OpenAI summary error:", error);
+
     return NextResponse.json(
-      { error: "Failed to summarize reviews" },
+      { error: error?.message || "Failed to summarize reviews" },
       { status: 500 }
     );
   }
