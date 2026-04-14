@@ -1,5 +1,5 @@
 import { color, motion } from 'motion/react';
-import { Calendar, MapPin, Users, Star, ExternalLink, UserCheck } from 'lucide-react';
+import { Calendar, MapPin, Users, Star, ExternalLink, UserCheck, UserPlus } from 'lucide-react';
 import { EventResponse } from '../models/eventSchema';
 import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
 import { Button } from './ui/button';
@@ -211,7 +211,11 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
                   }}
                   onClick={() => onAttend(event._id)}
                 >
-                  <UserCheck className="w-4 h-4 mr-2" />
+                  {isAttending ? (
+                    <UserCheck className="w-4 h-4 mr-2" />
+                  ) : (
+                    <UserPlus className="w-4 h-4 mr-2" />
+                  )}
                   {isAttending ? 'Attending' : 'Attend'}
                 </Button>
               )}

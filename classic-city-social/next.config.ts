@@ -22,6 +22,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'image2url.com'
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.ibb.co'
       }
     ],
   },

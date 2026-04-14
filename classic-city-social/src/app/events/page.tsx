@@ -30,6 +30,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { toast } from 'sonner';
 import { getUserLocation, calculateDistance } from '../services/api';
 import { data } from 'motion/react-client';
+import Image from 'next/image';
 
 /**
  * Events Page
@@ -483,11 +484,19 @@ export default function EventsPage() {
               {isAuthenticated ? (
                 <>
                   <div
-                    className="hidden md:flex items-center gap-2 px-3 py-2 bg-white/10 rounded-lg cursor-pointer hover:bg-white/20 transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 bg-white/10 rounded-lg cursor-pointer hover:bg-white/20 transition-colors"
                     onClick={() => router.push('/profile')}
                   >
-                    <UserIcon className="w-4 h-4" />
-                    <span>{user?.firstName + ' ' + user?.lastName}</span>
+                    <div className="w-6 h-6 rounded-full overflow-hidden border-1 border-white shadow-lg bg-gray-200">
+                      {user?.imageUrl ? (
+                        <Image src={user.imageUrl} alt={user.firstName + ' ' + user.lastName} width={128} height={128} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-gray-500 text-xs font-bold">
+                          {user?.firstName.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <span className="hidden md:inline">{user?.firstName + ' ' + user?.lastName}</span>
                   </div>
                   <Button
                     onClick={() => {

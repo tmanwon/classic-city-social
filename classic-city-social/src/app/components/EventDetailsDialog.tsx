@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { X, Star, Calendar, ExternalLink, Users, MapPin, UserCheck } from 'lucide-react';
+import { X, Star, Calendar, ExternalLink, Users, MapPin, UserCheck, UserPlus } from 'lucide-react';
 import { EventResponse } from '../models/eventSchema';
-import { Review } from '../models/reviewSchema';
+import { ReviewType, ReviewResponse } from '../models/reviewSchema';
 import { useAuth } from '../context/AuthContext';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -207,23 +207,27 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
             {isAuthenticated && (
               <Button
                 onClick={() => onAttend(event._id)}
-                className={`gap-2 h-14 px-8 rounded-2xl text-lg font-bold transition-all shadow-lg ${isAttending ? 'opacity-90' : 'hover:-translate-y-1'}`}
+                className={`gap-2 h-14 w-14 px-8 rounded-2xl text-lg font-bold transition-all shadow-lg ${isAttending ? 'opacity-90' : 'hover:-translate-y-1'} sm:w-auto`}
                 style={{
                   backgroundColor: isLightText ? (isAttending ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.95)') : (isAttending ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.85)'),
                   color: isLightText ? (isAttending ? textColor : domColor) : (isAttending ? textColor : '#ffffff'),
                 }}
               >
-                <UserCheck className="w-6 h-6" />
-                {isAttending ? 'Attending' : 'Mark Attending'}
+                {isAttending ? (
+                  <UserCheck className="w-6 h-6" />
+                ) : (
+                  <UserPlus className="w-6 h-6" />
+                )}
+                <span className="hidden sm:block">{isAttending ? 'Attending' : 'Mark Attending'}</span>
               </Button>
             )}
             <Button
               onClick={handleExportToCalendar}
-              className="gap-2 h-14 px-8 rounded-2xl text-lg font-semibold border-2 bg-transparent transition-colors hover:bg-black/5"
+              className="gap-2 h-14 w-14 px-8 rounded-2xl text-lg font-semibold border-2 bg-transparent transition-colors hover:bg-black/5 sm:w-auto"
               style={{ color: textColor, borderColor: isLightText ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}
             >
-              <ExternalLink className="w-5 h-5" />
-              Add to Google Calendar
+              <Calendar className="w-5 h-5" />
+              <span className="hidden sm:block">Add to Google Calendar</span>
             </Button>
             {event.source === 'ticketmaster' && event.url && (
               <Button
@@ -342,7 +346,7 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
                       <div key={review.id} className="pb-6 border-b last:border-0" style={{ borderColor }}>
                         <div className="flex items-start justify-between mb-3">
                           <div>
-                            <p className="font-bold text-lg">{review.userName}</p>
+                            <p className="font-bold text-lg">{review.userId}</p>
                             <p className="text-sm font-medium mt-0.5" style={{ color: mutedTextColor }}>
                               {new Date(review.createdAt).toLocaleDateString()}
                             </p>

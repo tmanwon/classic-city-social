@@ -64,7 +64,7 @@ export default function SplashPage() {
         >
           <div className="flex items-center justify-center gap-3 mb-4">
             <Sparkles className="w-12 h-12 text-red-500" />
-            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight">ClassicCity<span className="text-red-500">Social</span></h1>
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight">ClassicCity<span className="text-red-500">Social</span></h1>
           </div>
           <p className="text-xl md:text-2xl text-gray-300 max-w-2xl">Discover events around UGA campus and the Classic City</p>
         </motion.div>
