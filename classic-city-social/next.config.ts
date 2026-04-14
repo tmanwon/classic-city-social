@@ -18,6 +18,14 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'images.unsplash.com'
+      },
+      {
+        protocol: 'https',
+        hostname: 'image2url.com'
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.ibb.co'
       }
     ],
   },

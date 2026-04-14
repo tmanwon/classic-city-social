@@ -16,8 +16,8 @@ import {
 import { motion } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
 import { mockEvents, categories } from '../models/mockData';
-import { Event } from '../models/eventSchema';
-import { Review } from '../models/reviewSchema';
+import { EventType, EventResponse } from '../models/eventSchema';
+import { Review, ReviewResponse, ReviewType } from '../models/reviewSchema';
 import { User } from '../models/userSchema';
 import { EventCard } from '../components/EventCardNew';
 import { EventForm } from '../components/EventForm';
@@ -29,6 +29,8 @@ import { Badge } from '../components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { toast } from 'sonner';
 import { getUserLocation, calculateDistance } from '../services/api';
+import { data } from 'motion/react-client';
+import Image from 'next/image';
 
 /**
  * Events Page
@@ -38,11 +40,11 @@ import { getUserLocation, calculateDistance } from '../services/api';
  */
 export default function EventsPage() {
   const router = useRouter();
-  const { user, isAuthenticated, logout, updateUserInterests } = useAuth();
+  const { user, isAuthenticated, logout, updateUserInterests, updateUserProfile } = useAuth();
 
   // Event management state
-  const [events, setEvents] = useState<Event[]>(mockEvents);
-  const [filteredEvents, setFilteredEvents] = useState<Event[]>(mockEvents);
+  const [events, setEvents] = useState<EventResponse[]>([]);
+  const [filteredEvents, setFilteredEvents] = useState<EventResponse[]>([]);
 
   // Filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,8 +54,8 @@ export default function EventsPage() {
 
   // UI state for modals and interactions
   const [showEventForm, setShowEventForm] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<Event | undefined>(undefined);
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [editingEvent, setEditingEvent] = useState<EventResponse | undefined>(undefined);
+  const [selectedEvent, setSelectedEvent] = useState<EventResponse | null>(null);
   const [showMap, setShowMap] = useState(false);
 
   // User preferences
@@ -95,8 +97,8 @@ export default function EventsPage() {
         const distance = calculateDistance(
           userLocation.lat,
           userLocation.lng,
-          event.coordinates.lat,
-          event.coordinates.lng
+          event.coordinates.lat || 0,
+          event.coordinates.lng || 0
         );
         return distance <= distanceFilter;
       });
@@ -123,16 +125,33 @@ export default function EventsPage() {
     fetchEvents();
   }, []);
 
-  /**
-   * Fetch events from ticketmaster API from the Athens, GA area
-   * Fetch additional platform-specific events from our backend API (not implemented yet, just comment out basic prototype code for now)
-   * Fetch additional data if authenticated like friends attending, already attending, personalized recommendations, and events the user has created.
-   */
-  const fetchEvents = async () => {
+
+  const fetchBackendEvents = async () => {
+    // Fetch events from our DB through our backend API
+    try {
+      const response = await fetch('/api/events', {
+        method: 'GET',
+      });
+      if (!response.ok) {
+        throw new Error(`Error Code ${response.status}: Failed to fetch events from backend API: ${response.statusText}`);
+      }
+      const backend_data: EventResponse[] = (await response.json()).events;
+
+
+      return backend_data;
+
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      toast.error('Failed to load events. Please try again later.');
+      return [];
+    }
+
+  }
+
+  const fetchTicketmasterEvents = async () => {
     // Ticketmaster API fetch (example, not fully implemented)
     try {
       const response = await fetch(`https://app.ticketmaster.com/discovery/v2/events.json?city=Athens&stateCode=GA&size=60&sort=date,asc&apikey=${process.env.NEXT_PUBLIC_TICKETMASTER_API_KEY}`);
-      //const response = await fetch('https://app.ticketmaster.com/discovery/v2/events.json?postalCode=30601&apikey=11qju5jEo2UfKLGYhgwWx2waKSz1AcBo');
       if (!response.ok) {
         throw new Error(`Error Code ${response.status}: Failed to fetch events from Ticketmaster: ${response.statusText}`);
       }
@@ -140,72 +159,104 @@ export default function EventsPage() {
       console.log('Ticketmaster Data:', ticketmaster_data);
       console.log('Mapped Events:', ticketmaster_data._embedded.events);
 
+
       // Get object from ticketmaster_data._embedded.events.images array with largest width and use its url for the event image
 
-      const newEvents: Event[] = ticketmaster_data._embedded.events.map((event: any) => {
+      const newEvents: EventResponse[] = ticketmaster_data._embedded.events.map((event: any) => {
         const maxResImg = event.images.reduce((prev: { width: number }, current: { width: number }) => {
           return (prev.width > current.width) ? prev : current;
         });
 
         return (
           {
-            id: Math.random().toString(36).substr(2, 9),
+            _id: event.id,
+            tmid: event.id,
             title: event.name,
             description: event.description || "",
             date: event.dates.start.localDate,
             time: event.dates.start.localTime,
-            location: `${event._embedded.venues[0].name}`,
+            location: `${event._embedded.venues[0].address.line1}, ${event._embedded.venues[0].city.name}, ${event._embedded.venues[0].state.stateCode} ${event._embedded.venues[0].postalCode}`,
+            venue: `${event._embedded.venues[0].name}`,
             coordinates: {
               lat: event._embedded.venues[0].location.latitude,
               lng: event._embedded.venues[0].location.longitude,
             },
             category: event.classifications[0].segment.name,
             imageUrl: maxResImg.url || 'https://images.unsplash.com/photo-1672841821756-fc04525771c2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb25jZXJ0JTIwbXVzaWMlMjBmZXN0aXZhbCUyMGNyb3dkfGVufDF8fHx8MTc3Mzg2ODYyMXww&ixlib=rb-4.1.0&q=80&w=1080',
-            venue: event._embedded.venues[0].name,
-            price: event.priceRanges ? `$${event.priceRanges[0].min}+` : "N/A",
+            price: event.priceRanges ? `$${event.priceRanges[0].min}+` : "Ticketmaster",
             attendees: [],
             reviews: [],
             createdBy: null,
+            url: event.url,
             source: 'ticketmaster',
           }
         );
       });
 
-
-
-      setEvents(newEvents.concat(events));
+      return newEvents;
     } catch (error) {
       console.error('Error fetching events:', error);
       toast.error('Failed to load events. Please try again later.');
+      return [];
     }
+  }
 
+  /**
+   * Fetch events from ticketmaster API from the Athens, GA area
+   * Fetch additional platform-specific events from our backend API (not implemented yet, just comment out basic prototype code for now)
+   * Fetch additional data if authenticated like friends attending, already attending, personalized recommendations, and events the user has created.
+   */
+  const fetchEvents = async () => {
+    fetchBackendEvents().then((backend_data) => {
+      fetchTicketmasterEvents().then((ticketmaster_data) => {
+
+        const tmDupeFilteredEvents = ticketmaster_data.filter((event) => {
+          return (
+            backend_data.find((backendEvent) => backendEvent.tmid === event.tmid) === undefined
+          )
+        });
+
+        setEvents([...backend_data, ...tmDupeFilteredEvents]);
+      });
+    });
   }
 
   /**
    * Creates a new event and adds it to the top of the list
    * Only available to authenticated users
    */
-  const handleCreateEvent = (eventData: Partial<Event>) => {
+  const handleCreateEvent = async (eventData: Partial<EventResponse>) => {
     if (!user) return;
 
-    const newEvent: Event = {
-      id: Math.random().toString(36).substr(2, 9),
+    const newEvent: EventType = {
       title: eventData.title!,
+      tmid: null,
       description: eventData.description!,
       date: eventData.date!,
       time: eventData.time!,
       location: eventData.location!,
+      coordinates: eventData.coordinates!,
       category: eventData.category!,
       imageUrl: eventData.imageUrl || 'https://images.unsplash.com/photo-1672841821756-fc04525771c2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb25jZXJ0JTIwbXVzaWMlMjBmZXN0aXZhbCUyMGNyb3dkfGVufDF8fHx8MTc3Mzg2ODYyMXww&ixlib=rb-4.1.0&q=80&w=1080',
-      venue: eventData.venue,
-      price: eventData.price,
+      venue: eventData.venue!,
+      price: eventData.price!,
       attendees: [],
       reviews: [],
-      createdBy: user.id,
-      source: 'user',
+      createdBy: user._id,
+      url: null,
+      source: 'ClassicCitySocial',
     };
 
-    setEvents([newEvent, ...events]);
+    const response = await fetch('/api/events', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newEvent),
+    });
+    const createdEvent: EventResponse = (await response.json()).event;
+
+    setEvents([createdEvent, ...events]);
     setShowEventForm(false);
     toast.success('Event created successfully!');
   };
@@ -213,12 +264,37 @@ export default function EventsPage() {
   /**
    * Updates an existing event with new data
    */
-  const handleUpdateEvent = (eventData: Partial<Event>) => {
+  const handleUpdateEvent = async (eventData: Partial<EventResponse>) => {
     if (!editingEvent) return;
 
+    const response = await fetch(`/api/events/${editingEvent._id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(
+        {
+          attendees: editingEvent.attendees,
+          title: eventData.title!,
+          tmid: editingEvent.tmid,
+          description: eventData.description!,
+          date: eventData.date!,
+          time: eventData.time!,
+          location: eventData.location!,
+          coordinates: eventData.coordinates!,
+          category: eventData.category!,
+          imageUrl: eventData.imageUrl,
+          venue: eventData.venue!,
+          price: eventData.price!,
+          reviews: editingEvent.reviews,
+          createdBy: editingEvent.createdBy,
+          url: editingEvent.url,
+          source: editingEvent.source,
+        }),
+    });
+    const updatedEvent: EventResponse = (await response.json()).event;
+
     const updatedEvents = events.map((event) =>
-      event.id === editingEvent.id
-        ? { ...event, ...eventData }
+      event._id === editingEvent._id
+        ? { ...event, ...updatedEvent }
         : event
     );
 
@@ -232,59 +308,139 @@ export default function EventsPage() {
    * Removes an event from the list
    */
   const handleDeleteEvent = (id: string) => {
-    setEvents(events.filter((event) => event.id !== id));
+    setEvents(events.filter((event) => event._id !== id));
     toast.success('Event deleted');
   };
 
-  /**
-   * Toggle user's attendance for an event
-   * Adds or removes user ID from attendees list
-   */
-  const handleAttendEvent = (id: string) => {
+  const handleAttendEvent = async (id: string) => {
     if (!user) {
-      toast.error('Please log in to attend events');
+      toast.error('You must be logged in to attend events');
       return;
     }
 
-    setEvents(
-      events.map((event) => {
-        if (event.id === id) {
-          const isAttending = event.attendees.includes(user.id);
-          return {
-            ...event,
-            attendees: isAttending
-              ? event.attendees.filter((userId) => userId !== user.id)
-              : [...event.attendees, user.id],
-          };
+    const selected_event = events.find((e) => e._id === id);
+
+    if (!selected_event) {
+      toast.error('Event not found');
+      return
+    }
+
+    const isPureTicketMasterEvent = selected_event.tmid === selected_event._id;
+
+    if (isPureTicketMasterEvent) {
+      const { _id, ...eventWithoutId } = selected_event;
+
+      const newBackendEventData: EventType = {
+        tmid: selected_event.tmid,
+        title: selected_event.title,
+        description: "",
+        date: selected_event.date,
+        time: selected_event.time,
+        location: selected_event.location,
+        coordinates: selected_event.coordinates,
+        category: selected_event.category,
+        imageUrl: selected_event.imageUrl,
+        venue: selected_event.venue,
+        price: selected_event.price,
+        attendees: [user._id],
+        reviews: selected_event.reviews,
+        createdBy: selected_event.createdBy,
+        url: selected_event.url,
+        source: selected_event.source,
+      };
+
+      try {
+        const response = await fetch('/api/events', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newBackendEventData),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to save to backend:' + response.statusText);
         }
-        return event;
-      })
-    );
 
-    const event = events.find((e) => e.id === id);
-    const isCurrentlyAttending = event?.attendees.includes(user.id);
+        const data = await response.json();
+        const createdEvent: EventResponse = data.event;
 
-    toast.success(isCurrentlyAttending ? 'Removed from attending list' : 'Marked as attending!');
+        // Replace the old Ticketmaster event with the newly backendified one
+        setEvents(events.map(e => e._id === id ? createdEvent : e));
+
+        const newEventsAttending = [...(user.eventsAttending || []), createdEvent._id];
+        updateUserProfile({ eventsAttending: newEventsAttending });
+
+        toast.success("Marked as attending!");
+
+        if (selectedEvent?._id === id) {
+          setSelectedEvent(createdEvent);
+        }
+      } catch (error) {
+        console.error('Error saving Ticketmaster event to DB:', error);
+        toast.error("Failed to mark attendance");
+      }
+      return;
+    }
+
+    // Standard attend/unattend for events already existing in our DB
+    const isAttending = selected_event.attendees.includes(user._id);
+    const updatedAttendees = isAttending
+      ? selected_event.attendees.filter(userId => userId !== user._id)
+      : [...selected_event.attendees, user._id];
+
+    try {
+      const response = await fetch(`/api/events/${selected_event._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ attendees: updatedAttendees }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update event attendance');
+      }
+
+      const data = await response.json();
+      const updatedEvent: EventResponse = data.event;
+
+      setEvents(events.map(e => e._id === id ? updatedEvent : e));
+
+      const newEventsAttending = isAttending
+        ? user.eventsAttending?.filter(eventId => eventId !== updatedEvent._id) || []
+        : [...(user.eventsAttending || []), updatedEvent._id];
+      updateUserProfile({ eventsAttending: newEventsAttending });
+
+      toast.success(isAttending ? 'Removed from attending list' : 'Marked as attending!');
+
+      if (selectedEvent?._id === id) {
+        setSelectedEvent(updatedEvent);
+      }
+    } catch (error) {
+      console.error('Error updating attendance:', error);
+      toast.error("Failed to update attendance");
+    }
+
   };
 
   /**
    * Adds a review to an event and updates both the events list
    * and the currently viewed event details
    */
-  const handleAddReview = (eventId: string, review: Review) => {
+  const handleAddReview = (eventId: string, review: ReviewResponse, newEvent?: EventResponse) => {
     setEvents(
-      events.map((event) =>
-        event.id === eventId
-          ? { ...event, reviews: [...event.reviews, review] }
-          : event
-      )
+      events.map((event) => {
+        if (event._id === eventId) {
+          const updatedEvent = newEvent ? newEvent : event;
+          return { ...updatedEvent, reviews: [...updatedEvent.reviews, review._id] };
+        }
+        return event;
+      })
     );
 
     // Keep selected event in sync with updated reviews
-    if (selectedEvent?.id === eventId) {
+    if (selectedEvent?._id === eventId) {
+      const updatedEvent = newEvent ? newEvent : selectedEvent;
       setSelectedEvent({
-        ...selectedEvent,
-        reviews: [...selectedEvent.reviews, review],
+        ...updatedEvent,
+        reviews: [...updatedEvent.reviews, review._id],
       });
     }
   };
@@ -340,11 +496,19 @@ export default function EventsPage() {
               {isAuthenticated ? (
                 <>
                   <div
-                    className="hidden md:flex items-center gap-2 px-3 py-2 bg-white/10 rounded-lg cursor-pointer hover:bg-white/20 transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 bg-white/10 rounded-lg cursor-pointer hover:bg-white/20 transition-colors"
                     onClick={() => router.push('/profile')}
                   >
-                    <UserIcon className="w-4 h-4" />
-                    <span>{user?.name}</span>
+                    <div className="w-6 h-6 rounded-full overflow-hidden border-1 border-white shadow-lg bg-gray-200">
+                      {user?.imageUrl ? (
+                        <Image src={user.imageUrl} alt={user.firstName + ' ' + user.lastName} width={128} height={128} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-gray-500 text-xs font-bold">
+                          {user?.firstName.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <span className="hidden md:inline">{user?.firstName + ' ' + user?.lastName}</span>
                   </div>
                   <Button
                     onClick={() => {
@@ -363,6 +527,13 @@ export default function EventsPage() {
                   >
                     <LogOut className="w-4 h-4" />
                     <span className="hidden md:inline">Logout</span>
+                  </Button>
+                  <Button
+                    onClick={() => router.push('/friends')}
+                    variant="outline"
+                    className="border-white/30 text-black hover:bg-white/10 hover:text-white"
+                  >
+                    <span className="hidden md:inline">Friends</span>
                   </Button>
                 </>
               ) : (
@@ -491,7 +662,7 @@ export default function EventsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredEvents.map((event) => (
               <EventCard
-                key={event.id}
+                key={event._id}
                 event={event}
                 onEdit={(event) => {
                   setEditingEvent(event);
@@ -534,6 +705,7 @@ export default function EventsPage() {
         onClose={() => setShowMap(false)}
         events={filteredEvents}
         onAttendEvent={handleAttendEvent}
+        onAddReview={handleAddReview}
       />
     </div>
   );

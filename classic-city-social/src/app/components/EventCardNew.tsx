@@ -1,6 +1,6 @@
 import { color, motion } from 'motion/react';
-import { Calendar, MapPin, Users, Star, ExternalLink, UserCheck } from 'lucide-react';
-import { Event } from '../models/mockData';
+import { Calendar, MapPin, Users, Star, ExternalLink, UserCheck, UserPlus } from 'lucide-react';
+import { EventResponse } from '../models/eventSchema';
 import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -12,21 +12,43 @@ import { Londrina_Solid } from 'next/font/google';
 import { useState, useEffect } from 'react';
 
 interface EventCardProps {
-  event: Event;
-  onEdit?: (event: Event) => void;
+  event: EventResponse;
+  onEdit?: (event: EventResponse) => void;
   onDelete?: (id: string) => void;
   onAttend?: (id: string) => void;
-  onViewDetails?: (event: Event) => void;
+  onViewDetails?: (event: EventResponse) => void;
 }
 
 export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: EventCardProps) {
   const { user, isAuthenticated } = useAuth();
-  const isAttending = user ? event.attendees.includes(user.id) : false;
-  const avgRating = event.reviews.length > 0
-    ? event.reviews.reduce((sum, r) => sum + r.rating, 0) / event.reviews.length
+  const isAttending = user ? event.attendees.includes(user._id) : false;
+  const [fetchedReviews, setFetchedReviews] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      const id = event._id || event.tmid;
+      if (!id || !event.reviews || event.reviews.length === 0) {
+        setFetchedReviews([]);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/reviews?eventId=${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setFetchedReviews(data.reviews || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch reviews:', err);
+      }
+    };
+    fetchReviews();
+  }, [event._id, event.tmid, event.reviews?.length]);
+
+  const avgRating = fetchedReviews.length > 0
+    ? fetchedReviews.reduce((sum, r) => sum + Number(r.rating), 0) / fetchedReviews.length
     : 0;
 
-  const sentimentSummary = generateSentimentSummary(event.reviews);
+  const sentimentSummary = generateSentimentSummary(fetchedReviews);
   const categoryColors: Record<string, string> = {
     music: 'bg-purple-500',
     sports: 'bg-red-500',
@@ -102,7 +124,7 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
             <Badge className={`${categoryColor} text-white border-0 shadow-md backdrop-blur-md`}>
               {event.category}
             </Badge>
-            {event.source !== 'user' && (
+            {event.source !== 'ClassicCitySocial' && (
               <Badge variant="secondary" className="bg-black/60 backdrop-blur-md text-white border-0 shadow-md">
                 {event.source}
               </Badge>
@@ -152,7 +174,7 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
           <CardContent className="p-0 flex-1 z-20 flex flex-col gap-3">
             <div className="flex items-start gap-2 text-sm font-medium" style={{ color: textColor }}>
               <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 opacity-80" />
-              <span className="line-clamp-2 leading-snug">{event.location}</span>
+              <span className="line-clamp-2 leading-snug">{event.venue}</span>
             </div>
 
             <p className="text-sm line-clamp-2 leading-relaxed" style={{ color: mutedTextColor }}>
@@ -167,13 +189,13 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
                 </div>
               )}
 
-              {event.reviews.length > 0 && (
+              {fetchedReviews.length > 0 && (
                 <div className="flex flex-col items-end">
                   <span className="text-xs uppercase tracking-wider font-bold mb-0.5" style={{ color: mutedTextColor }}>Rating</span>
                   <div className="flex items-center gap-1 font-semibold leading-none">
                     <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                     <span style={{ color: textColor }}>{avgRating.toFixed(1)}</span>
-                    <span className="text-xs ml-1 font-normal opacity-70" style={{ color: textColor }}>({event.reviews.length})</span>
+                    <span className="text-xs ml-1 font-normal opacity-70" style={{ color: textColor }}>({fetchedReviews.length})</span>
                   </div>
                 </div>
               )}
@@ -209,15 +231,19 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
                     backgroundColor: isLightText ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)',
                     color: isLightText ? domColor : '#ffffff',
                   }}
-                  onClick={() => onAttend(event.id)}
+                  onClick={() => onAttend(event._id)}
                 >
-                  <UserCheck className="w-4 h-4 mr-2" />
+                  {isAttending ? (
+                    <UserCheck className="w-4 h-4 mr-2" />
+                  ) : (
+                    <UserPlus className="w-4 h-4 mr-2" />
+                  )}
                   {isAttending ? 'Attending' : 'Attend'}
                 </Button>
               )}
             </div>
 
-            {isAuthenticated && user && event.createdBy === user.id && (
+            {isAuthenticated && user && event.createdBy === user._id && (
               <div className="flex gap-3 w-full">
                 <Button
                   variant="outline"
@@ -232,7 +258,7 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
                   variant="destructive"
                   size="sm"
                   className="flex-1 rounded-xl h-9 hover:bg-red-600"
-                  onClick={() => onDelete?.(event.id)}
+                  onClick={() => onDelete?.(event._id)}
                 >
                   Delete
                 </Button>

@@ -11,13 +11,14 @@ import { User as MockUser } from '../models/userSchema';
 import { EventCard } from '../components/EventCardNew';
 import { Camera, Settings, Activity, MapPin, Edit3, ArrowLeft, Users } from 'lucide-react';
 import { toast } from 'sonner';
+import Image from 'next/image';
 
 export default function ProfilePage() {
   const router = useRouter();
   const { user, isAuthenticated, updateUserProfile } = useAuth();
 
   const [isEditingName, setIsEditingName] = useState(false);
-  const [editName, setEditName] = useState(user?.name || '');
+  const [editName, setEditName] = useState(user?.firstName + ' ' + user?.lastName || '');
 
   // Ensure user is authenticated to view this page
   useEffect(() => {
@@ -43,7 +44,8 @@ export default function ProfilePage() {
       toast.error("Name cannot be empty");
       return;
     }
-    updateUserProfile({ name: editName });
+    const [firstName, lastName] = editName.split(' ');
+    updateUserProfile({ firstName: firstName, lastName: lastName });
     setIsEditingName(false);
     toast.success("Profile updated");
   };
@@ -79,10 +81,10 @@ export default function ProfilePage() {
               <div className="relative z-10 mt-12 mb-4 group cursor-pointer">
                 <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg bg-gray-200">
                   {user.imageUrl ? (
-                    <img src={user.imageUrl} alt={user.name} className="w-full h-full object-cover" />
+                    <Image src={user.imageUrl} alt={user.firstName + ' ' + user.lastName} width={128} height={128} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-gray-500 text-4xl font-bold">
-                      {user.name.charAt(0).toUpperCase()}
+                      {user.firstName.charAt(0).toUpperCase()}
                     </div>
                   )}
                 </div>
@@ -105,13 +107,13 @@ export default function ProfilePage() {
                   />
                   <div className="flex gap-2 justify-center">
                     <Button size="sm" variant="default" onClick={handleSaveName}>Save</Button>
-                    <Button size="sm" variant="outline" onClick={() => { setIsEditingName(false); setEditName(user.name); }}>Cancel</Button>
+                    <Button size="sm" variant="outline" onClick={() => { setIsEditingName(false); setEditName(user.firstName + ' ' + user.lastName); }}>Cancel</Button>
                   </div>
                 </div>
               ) : (
                 <div className="mb-6 z-10 relative group">
                   <h2 className="text-2xl font-bold text-gray-900 flex items-center justify-center gap-2">
-                    {user.name}
+                    {user.firstName + ' ' + user.lastName}
                     <button onClick={() => setIsEditingName(true)} className="text-gray-400 hover:text-gray-800 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Edit3 className="w-4 h-4" />
                     </button>
@@ -180,7 +182,7 @@ export default function ProfilePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {pastEvents.map((event) => (
-                  <div key={`profile-event-${event.id}`} className="h-[400px]">
+                  <div key={`profile-event-${event._id}`} className="h-[400px]">
                     {/* We reuse the improved EventCard here! */}
                     <EventCard
                       event={event}
