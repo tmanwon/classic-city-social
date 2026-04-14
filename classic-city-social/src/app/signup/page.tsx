@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { motion } from 'motion/react';
 import { UserPlus, Mail, Lock, User, AlertCircle } from 'lucide-react';
 import { Camera } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useSession } from 'next-auth/react';
+import { doCredentialLogin } from '../../../actions';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -21,7 +22,7 @@ import { uploadImage } from '../utils/cdn';
  */
 export default function SignupPage() {
   const router = useRouter();
-  const { signup } = useAuth();
+  const { update } = useSession();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -41,9 +42,48 @@ export default function SignupPage() {
 
     setErrorMessage('');
     try {
-      await signup(email, password, name, profileImage || undefined);
-      toast.success('Account created successfully!');
-      router.push('/events');
+      if (password.length >= 6 && email.includes('@')) {
+        const [firstName, lastName] = name.split(' ');
+        const newUser = {
+          firstName: firstName || '',
+          lastName: lastName || '',
+          email: email,
+          password: password,
+          imageUrl: profileImage || undefined,
+          interests: [],
+          myEvents: [],
+          eventsAttending: [],
+          friends: []
+        };
+
+        const response = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newUser),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || response.statusText);
+        }
+
+        const formData = new FormData();
+        formData.append("email", email);
+        formData.append("password", password);
+
+        const res = await doCredentialLogin(formData as any);
+        if (res?.error) {
+          throw new Error("Authentication failed after signup");
+        }
+
+        await update();
+        toast.success('Account created successfully!');
+        router.push('/events');
+        router.refresh();
+      } else {
+        throw new Error('Invalid input');
+      }
     } catch (error: any) {
       setErrorMessage(error.message || 'An unexpected error occurred');
     } finally {
@@ -92,9 +132,9 @@ export default function SignupPage() {
           </div>
 
           {errorMessage && (
-            <motion.div 
-              initial={{ opacity: 0, y: -10 }} 
-              animate={{ opacity: 1, y: 0 }} 
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
               className="mb-8 p-4 rounded-xl bg-red-500/20 border border-red-500/50 flex items-center gap-3 text-red-200"
             >
               <AlertCircle className="w-5 h-5 shrink-0" />

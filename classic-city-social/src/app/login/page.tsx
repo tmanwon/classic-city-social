@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useSession } from 'next-auth/react';
+import { doCredentialLogin } from '../../../actions';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -18,7 +19,7 @@ import { toast } from 'sonner';
  */
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { update } = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -35,9 +36,18 @@ export default function LoginPage() {
 
     setErrorMessage('');
     try {
-      await login(email, password);
-      toast.success('Welcome back!');
-      router.push('/events');
+      const formData = new FormData();
+      formData.append("email", email);
+      formData.append("password", password);
+
+      const res = await doCredentialLogin(formData as any);
+      if (res?.error) {
+        setErrorMessage(res.error.message);
+      } else {
+        await update();
+        toast.success('Welcome back!');
+        router.push('/events');
+      }
     } catch (error: any) {
       setErrorMessage(error.message || 'An unexpected error occurred');
     } finally {
@@ -63,9 +73,9 @@ export default function LoginPage() {
           </div>
 
           {errorMessage && (
-            <motion.div 
-              initial={{ opacity: 0, y: -10 }} 
-              animate={{ opacity: 1, y: 0 }} 
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
               className="mb-6 p-4 rounded-xl bg-red-500/20 border border-red-500/50 flex items-center gap-3 text-red-200"
             >
               <AlertCircle className="w-5 h-5 shrink-0" />

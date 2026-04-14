@@ -14,7 +14,7 @@ import {
   Map as MapIcon
 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useAuth } from '../context/AuthContext';
+import { useSession, signOut } from "next-auth/react";
 import { mockEvents, categories } from '../models/mockData';
 import { EventType, EventResponse } from '../models/eventSchema';
 import { Review, ReviewResponse, ReviewType } from '../models/reviewSchema';
@@ -40,7 +40,12 @@ import Image from 'next/image';
  */
 export default function EventsPage() {
   const router = useRouter();
-  const { user, isAuthenticated, logout, updateUserInterests, updateUserProfile } = useAuth();
+  const { data: session, status, update } = useSession();
+  const user = session?.user as any;
+  const isAuthenticated = status === 'authenticated';
+  const logout = () => signOut({ redirect: false });
+  const updateUserInterests = (interests: string[]) => update({ interests });
+  const updateUserProfile = (updates: any) => update(updates);
 
   // Event management state
   const [events, setEvents] = useState<EventResponse[]>([]);
@@ -404,7 +409,7 @@ export default function EventsPage() {
       setEvents(events.map(e => e._id === id ? updatedEvent : e));
 
       const newEventsAttending = isAttending
-        ? user.eventsAttending?.filter(eventId => eventId !== updatedEvent._id) || []
+        ? user.eventsAttending?.filter((eventId: string) => eventId !== updatedEvent._id) || []
         : [...(user.eventsAttending || []), updatedEvent._id];
       updateUserProfile({ eventsAttending: newEventsAttending });
 

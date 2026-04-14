@@ -4,7 +4,7 @@ import { EventResponse } from '../models/eventSchema';
 import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { useAuth } from '../context/AuthContext';
+import { useSession } from "next-auth/react";
 import { generateSentimentSummary } from '../services/api';
 import { useExtractColors } from "react-extract-colors";
 import Image from 'next/image';
@@ -20,7 +20,9 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: EventCardProps) {
-  const { user, isAuthenticated } = useAuth();
+  const { data: session, status } = useSession();
+  const user = session?.user as any;
+  const isAuthenticated = status === 'authenticated';
   const isAttending = user ? event.attendees.includes(user._id) : false;
   const [fetchedReviews, setFetchedReviews] = useState<any[]>([]);
 

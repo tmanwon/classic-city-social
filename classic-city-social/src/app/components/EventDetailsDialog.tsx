@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { X, Star, Calendar, ExternalLink, Users, MapPin, UserCheck, UserPlus } from 'lucide-react';
 import { EventResponse } from '../models/eventSchema';
 import { ReviewType, ReviewResponse } from '../models/reviewSchema';
-import { useAuth } from '../context/AuthContext';
+import { useSession } from "next-auth/react";
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Textarea } from './ui/textarea';
@@ -43,7 +43,9 @@ const formatReviewDate = (value?: string) => {
 };
 
 export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: EventDetailsDialogProps) {
-  const { user, isAuthenticated } = useAuth();
+  const { data: session, status } = useSession();
+  const user = session?.user as any;
+  const isAuthenticated = status === 'authenticated';
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
