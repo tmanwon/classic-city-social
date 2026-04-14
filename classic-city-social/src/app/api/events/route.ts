@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import connectMongoDB from '@/config/mongodb';
 import Event from "@/src/app/models/eventSchema";
 import Review from "@/src/app/models/reviewSchema";
+import User from "@/src/app/models/userSchema";
 
 export const dynamic = "force-dynamic";
 
@@ -11,21 +12,12 @@ export async function GET() {
 
   const events = await Event.find().lean();
 
-  const eventsWithReviews = await Promise.all(
-    events.map(async (event) => {
-      const reviews = await Review.find({ eventId: event._id.toString() })
-        .sort({ createdAt: -1 })
-        .lean();
+  const formattedEvents = events.map((event) => ({
+    ...event,
+    _id: event._id.toString(),
+  }));
 
-      return {
-        ...event,
-        _id: event._id.toString(),
-        reviews,
-      };
-    })
-  );
-
-  return new NextResponse(JSON.stringify({ events: eventsWithReviews }), {
+  return new NextResponse(JSON.stringify({ events: formattedEvents }), {
     status: 200,
     headers: {
       "content-type": "application/json",
@@ -74,6 +66,13 @@ export async function POST(request: NextRequest) {
     url,
     source
   });
+
+  if (attendees && attendees.length > 0) {
+    await User.updateMany(
+      { _id: { $in: attendees } },
+      { $addToSet: { eventsAttending: createdEvent._id.toString() } }
+    );
+  }
 
   return NextResponse.json(
     { message: "Event created successfully", event: createdEvent },

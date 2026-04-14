@@ -10,6 +10,17 @@ export type ReviewType = {
   createdAt: string;
 };
 
+export type ReviewResponse = {
+  _id: string;
+  eventId: string;
+  userId: string;
+  userName: string;
+  rating: number;
+  comment: string;
+  sentiment: 'positive' | 'negative' | 'neutral';
+  createdAt: string;
+};
+
 export type ReviewDoc = mongoose.HydratedDocument<ReviewType>;
 
 export const ReviewSchema = new Schema<ReviewType>(

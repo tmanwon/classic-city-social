@@ -20,20 +20,11 @@ const MiniMap = dynamic(() => import('./MiniMapComponent'), {
   loading: () => <div className="w-full h-full bg-white/10 animate-pulse" />
 });
 
-interface ReviewUI extends ReviewType {
-  _id?: string;
-  id?: string;
-}
-
-type EventWithReviews = Omit<EventResponse, 'reviews'> & {
-  reviews: ReviewUI[];
-  aiSummary?: string | null;
-};
 
 interface EventDetailsDialogProps {
-  event: EventWithReviews;
+  event: EventResponse;
   onClose: () => void;
-  onAddReview: (eventId: string, review: ReviewUI) => void;
+  onAddReview: (eventId: string, review: ReviewResponse, newEvent?: EventResponse) => void;
   onAttend: (eventId: string) => void;
 }
 
@@ -107,44 +98,54 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
 
   const isAttending = user ? event.attendees.includes(user._id) : false;
 
-  const normalizedReviews = useMemo(
-    () =>
-      event.reviews.map((review) => ({
+  const [fetchedReviews, setFetchedReviews] = useState<ReviewResponse[]>([]);
+  const [reviewsLoadingState, setReviewsLoadingState] = useState(false);
+
+  useEffect(() => {
+    const fetchEventReviews = async () => {
+      const id = event._id || event.tmid;
+      if (!id || event.reviews.length === 0) {
+        setFetchedReviews([]);
+        return;
+      }
+      setReviewsLoadingState(true);
+      try {
+        const res = await fetch(`/api/reviews?eventId=${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setFetchedReviews(data.reviews || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch reviews:', err);
+      } finally {
+        setReviewsLoadingState(false);
+      }
+    };
+    fetchEventReviews();
+  }, [event._id, event.tmid, event.reviews.length]);
+
+  const normalizedReviews = fetchedReviews.map((review) => ({
+    ...review,
+    ratingNumber: Number(review.rating),
+    hasValidRating: Number.isFinite(Number(review.rating)),
+    safeDate: formatReviewDate(review.createdAt),
+  }));
+
+  const validRatings = normalizedReviews
+    .map((review) => review.ratingNumber)
+    .filter((value) => Number.isFinite(value));
+
+  const avgRating = validRatings.length > 0
+    ? validRatings.reduce((sum, value) => sum + value, 0) / validRatings.length
+    : 0;
+
+  const sentimentSummary = generateSentimentSummary(
+    normalizedReviews
+      .filter((review) => review.hasValidRating)
+      .map((review) => ({
         ...review,
-        ratingNumber: Number(review.rating),
-        hasValidRating: Number.isFinite(Number(review.rating)),
-        safeDate: formatReviewDate(review.createdAt),
-      })),
-    [event.reviews]
-  );
-
-  const validRatings = useMemo(
-    () =>
-      normalizedReviews
-        .map((review) => review.ratingNumber)
-        .filter((value) => Number.isFinite(value)),
-    [normalizedReviews]
-  );
-
-  const avgRating = useMemo(
-    () =>
-      validRatings.length > 0
-        ? validRatings.reduce((sum, value) => sum + value, 0) / validRatings.length
-        : 0,
-    [validRatings]
-  );
-
-  const sentimentSummary = useMemo(
-    () =>
-      generateSentimentSummary(
-        normalizedReviews
-          .filter((review) => review.hasValidRating)
-          .map((review) => ({
-            ...review,
-            rating: review.ratingNumber,
-          }))
-      ),
-    [normalizedReviews]
+        rating: review.ratingNumber,
+      }))
   );
 
   useEffect(() => {
@@ -189,7 +190,46 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
     try {
       const sentiment = await analyzeSentiment(comment);
 
-      const reviewEventId = event._id || event.tmid;
+      let actualEventId = event._id || event.tmid;
+      const isPureTicketMasterEvent = event.tmid === event._id;
+      let newlyCreatedEvent: EventResponse | undefined = undefined;
+
+      if (isPureTicketMasterEvent) {
+        const newBackendEventData = {
+          tmid: event.tmid,
+          title: event.title,
+          description: event.description || "",
+          date: event.date,
+          time: event.time,
+          location: event.location,
+          coordinates: event.coordinates,
+          category: event.category,
+          imageUrl: event.imageUrl,
+          venue: event.venue,
+          price: event.price,
+          attendees: event.attendees,
+          reviews: event.reviews,
+          createdBy: event.createdBy,
+          url: event.url,
+          source: event.source,
+        };
+
+        const createRes = await fetch('/api/events', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newBackendEventData),
+        });
+
+        if (!createRes.ok) {
+          throw new Error('Failed to save event to backend: ' + createRes.statusText);
+        }
+
+        const createData = await createRes.json();
+        newlyCreatedEvent = createData.event;
+        actualEventId = newlyCreatedEvent!._id;
+      }
+
+      const reviewEventId = actualEventId;
       const reviewUserId = user._id ?? (user as { id?: string }).id ?? '';
       const reviewUserName =
         `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() ||
@@ -201,7 +241,7 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
         throw new Error('Missing required review fields');
       }
 
-      const reviewPayload = {
+      const reviewPayload: ReviewType = {
         eventId: reviewEventId,
         userId: reviewUserId,
         userName: reviewUserName,
@@ -223,7 +263,7 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
         throw new Error(data.error || 'Failed to add review');
       }
 
-      onAddReview(event._id ?? event.tmid ?? '', data.review);
+      onAddReview(event._id ?? event.tmid ?? '', data.review, newlyCreatedEvent);
 
       setComment('');
       setRating(5);
@@ -446,8 +486,8 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
                           >
                             <Star
                               className={`w-8 h-8 ${num <= rating
-                                  ? 'fill-yellow-400 text-yellow-400 drop-shadow-sm'
-                                  : 'text-gray-400/30'
+                                ? 'fill-yellow-400 text-yellow-400 drop-shadow-sm'
+                                : 'text-gray-400/30'
                                 }`}
                             />
                           </button>
@@ -491,13 +531,13 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
                   ) : (
                     normalizedReviews.map((review, index) => (
                       <div
-                        key={review._id ?? review.id ?? `${review.userId ?? 'review'}-${review.createdAt ?? index}-${index}`}
+                        key={review._id ?? `${review.userId ?? 'review'}-${review.createdAt ?? index}-${index}`}
                         className="pb-6 border-b last:border-0"
                         style={{ borderColor }}
                       >
                         <div className="flex items-start justify-between mb-3">
                           <div>
-                            <p className="font-bold text-lg">{review.userId}</p>
+                            <p className="font-bold text-lg">{review.userName}</p>
                             <p className="text-sm font-medium mt-0.5" style={{ color: mutedTextColor }}>
                               {review.safeDate}
                             </p>

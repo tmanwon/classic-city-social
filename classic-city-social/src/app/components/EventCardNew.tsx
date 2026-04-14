@@ -22,11 +22,33 @@ interface EventCardProps {
 export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: EventCardProps) {
   const { user, isAuthenticated } = useAuth();
   const isAttending = user ? event.attendees.includes(user._id) : false;
-  const avgRating = event.reviews.length > 0
-    ? event.reviews.reduce((sum, r) => sum + r.rating, 0) / event.reviews.length
+  const [fetchedReviews, setFetchedReviews] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      const id = event._id || event.tmid;
+      if (!id || !event.reviews || event.reviews.length === 0) {
+        setFetchedReviews([]);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/reviews?eventId=${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setFetchedReviews(data.reviews || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch reviews:', err);
+      }
+    };
+    fetchReviews();
+  }, [event._id, event.tmid, event.reviews?.length]);
+
+  const avgRating = fetchedReviews.length > 0
+    ? fetchedReviews.reduce((sum, r) => sum + Number(r.rating), 0) / fetchedReviews.length
     : 0;
 
-  const sentimentSummary = generateSentimentSummary(event.reviews);
+  const sentimentSummary = generateSentimentSummary(fetchedReviews);
   const categoryColors: Record<string, string> = {
     music: 'bg-purple-500',
     sports: 'bg-red-500',
@@ -167,13 +189,13 @@ export function EventCard({ event, onEdit, onDelete, onAttend, onViewDetails }: 
                 </div>
               )}
 
-              {event.reviews.length > 0 && (
+              {fetchedReviews.length > 0 && (
                 <div className="flex flex-col items-end">
                   <span className="text-xs uppercase tracking-wider font-bold mb-0.5" style={{ color: mutedTextColor }}>Rating</span>
                   <div className="flex items-center gap-1 font-semibold leading-none">
                     <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                     <span style={{ color: textColor }}>{avgRating.toFixed(1)}</span>
-                    <span className="text-xs ml-1 font-normal opacity-70" style={{ color: textColor }}>({event.reviews.length})</span>
+                    <span className="text-xs ml-1 font-normal opacity-70" style={{ color: textColor }}>({fetchedReviews.length})</span>
                   </div>
                 </div>
               )}

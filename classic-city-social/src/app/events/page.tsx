@@ -17,7 +17,7 @@ import { motion } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
 import { mockEvents, categories } from '../models/mockData';
 import { EventType, EventResponse } from '../models/eventSchema';
-import { Review } from '../models/reviewSchema';
+import { Review, ReviewResponse, ReviewType } from '../models/reviewSchema';
 import { User } from '../models/userSchema';
 import { EventCard } from '../components/EventCardNew';
 import { EventForm } from '../components/EventForm';
@@ -40,7 +40,7 @@ import Image from 'next/image';
  */
 export default function EventsPage() {
   const router = useRouter();
-  const { user, isAuthenticated, logout, updateUserInterests } = useAuth();
+  const { user, isAuthenticated, logout, updateUserInterests, updateUserProfile } = useAuth();
 
   // Event management state
   const [events, setEvents] = useState<EventResponse[]>([]);
@@ -365,6 +365,10 @@ export default function EventsPage() {
 
         // Replace the old Ticketmaster event with the newly backendified one
         setEvents(events.map(e => e._id === id ? createdEvent : e));
+
+        const newEventsAttending = [...(user.eventsAttending || []), createdEvent._id];
+        updateUserProfile({ eventsAttending: newEventsAttending });
+
         toast.success("Marked as attending!");
 
         if (selectedEvent?._id === id) {
@@ -398,6 +402,12 @@ export default function EventsPage() {
       const updatedEvent: EventResponse = data.event;
 
       setEvents(events.map(e => e._id === id ? updatedEvent : e));
+
+      const newEventsAttending = isAttending
+        ? user.eventsAttending?.filter(eventId => eventId !== updatedEvent._id) || []
+        : [...(user.eventsAttending || []), updatedEvent._id];
+      updateUserProfile({ eventsAttending: newEventsAttending });
+
       toast.success(isAttending ? 'Removed from attending list' : 'Marked as attending!');
 
       if (selectedEvent?._id === id) {
@@ -414,20 +424,23 @@ export default function EventsPage() {
    * Adds a review to an event and updates both the events list
    * and the currently viewed event details
    */
-  const handleAddReview = (eventId: string, review: Review) => {
+  const handleAddReview = (eventId: string, review: ReviewResponse, newEvent?: EventResponse) => {
     setEvents(
-      events.map((event) =>
-        event._id === eventId
-          ? { ...event, reviews: [...event.reviews, review] }
-          : event
-      )
+      events.map((event) => {
+        if (event._id === eventId) {
+          const updatedEvent = newEvent ? newEvent : event;
+          return { ...updatedEvent, reviews: [...updatedEvent.reviews, review._id] };
+        }
+        return event;
+      })
     );
 
     // Keep selected event in sync with updated reviews
     if (selectedEvent?._id === eventId) {
+      const updatedEvent = newEvent ? newEvent : selectedEvent;
       setSelectedEvent({
-        ...selectedEvent,
-        reviews: [...selectedEvent.reviews, review],
+        ...updatedEvent,
+        reviews: [...updatedEvent.reviews, review._id],
       });
     }
   };
@@ -516,11 +529,11 @@ export default function EventsPage() {
                     <span className="hidden md:inline">Logout</span>
                   </Button>
                   <Button
-                  onClick={() => router.push('/friends')}
+                    onClick={() => router.push('/friends')}
                     variant="outline"
                     className="border-white/30 text-black hover:bg-white/10 hover:text-white"
-                    >
-                      <span className="hidden md:inline">Friends</span>
+                  >
+                    <span className="hidden md:inline">Friends</span>
                   </Button>
                 </>
               ) : (
@@ -692,6 +705,7 @@ export default function EventsPage() {
         onClose={() => setShowMap(false)}
         events={filteredEvents}
         onAttendEvent={handleAttendEvent}
+        onAddReview={handleAddReview}
       />
     </div>
   );

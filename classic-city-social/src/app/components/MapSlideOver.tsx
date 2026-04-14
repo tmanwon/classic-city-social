@@ -18,9 +18,10 @@ interface MapSlideOverProps {
   onClose: () => void;
   events: EventResponse[];
   onAttendEvent?: (id: string) => void;
+  onAddReview?: (eventId: string, review: any, newEvent?: EventResponse) => void;
 }
 
-export function MapSlideOver({ isOpen, onClose, events, onAttendEvent }: MapSlideOverProps) {
+export function MapSlideOver({ isOpen, onClose, events, onAttendEvent, onAddReview }: MapSlideOverProps) {
   const [selectedEvent, setSelectedEvent] = useState<EventResponse | null>(null);
 
   // Close when pressing escape
@@ -91,7 +92,7 @@ export function MapSlideOver({ isOpen, onClose, events, onAttendEvent }: MapSlid
                   event={selectedEvent}
                   onClose={() => setSelectedEvent(null)}
                   onAttend={onAttendEvent || (() => { })}
-                  onAddReview={() => { }}
+                  onAddReview={onAddReview || (() => { })}
                 />
               </div>
             )}
