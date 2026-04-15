@@ -130,9 +130,12 @@ export default function EventsPage() {
     fetchEvents();
   }, []);
 
-
-  const fetchBackendEvents = async () => {
-    // Fetch events from our DB through our backend API
+  /**
+   * Fetch events from ticketmaster API from the Athens, GA area
+   * Fetch additional platform-specific events from our backend API (not implemented yet, just comment out basic prototype code for now)
+   * Fetch additional data if authenticated like friends attending, already attending, personalized recommendations, and events the user has created.
+   */
+  const fetchEvents = async () => {
     try {
       const response = await fetch('/api/events', {
         method: 'GET',
@@ -140,90 +143,12 @@ export default function EventsPage() {
       if (!response.ok) {
         throw new Error(`Error Code ${response.status}: Failed to fetch events from backend API: ${response.statusText}`);
       }
-      const backend_data: EventResponse[] = (await response.json()).events;
-
-
-      return backend_data;
-
+      const data = await response.json();
+      setEvents(data.events);
     } catch (error) {
       console.error('Error fetching events:', error);
       toast.error('Failed to load events. Please try again later.');
-      return [];
     }
-
-  }
-
-  const fetchTicketmasterEvents = async () => {
-    // Ticketmaster API fetch (example, not fully implemented)
-    try {
-      const response = await fetch(`https://app.ticketmaster.com/discovery/v2/events.json?city=Athens&stateCode=GA&size=60&sort=date,asc&apikey=${process.env.NEXT_PUBLIC_TICKETMASTER_API_KEY}`);
-      if (!response.ok) {
-        throw new Error(`Error Code ${response.status}: Failed to fetch events from Ticketmaster: ${response.statusText}`);
-      }
-      const ticketmaster_data = await response.json();
-      console.log('Ticketmaster Data:', ticketmaster_data);
-      console.log('Mapped Events:', ticketmaster_data._embedded.events);
-
-
-      // Get object from ticketmaster_data._embedded.events.images array with largest width and use its url for the event image
-
-      const newEvents: EventResponse[] = ticketmaster_data._embedded.events.map((event: any) => {
-        const maxResImg = event.images.reduce((prev: { width: number }, current: { width: number }) => {
-          return (prev.width > current.width) ? prev : current;
-        });
-
-        return (
-          {
-            _id: event.id,
-            tmid: event.id,
-            title: event.name,
-            description: event.description || "",
-            date: event.dates.start.localDate,
-            time: event.dates.start.localTime,
-            location: `${event._embedded.venues[0].address.line1}, ${event._embedded.venues[0].city.name}, ${event._embedded.venues[0].state.stateCode} ${event._embedded.venues[0].postalCode}`,
-            venue: `${event._embedded.venues[0].name}`,
-            coordinates: {
-              lat: event._embedded.venues[0].location.latitude,
-              lng: event._embedded.venues[0].location.longitude,
-            },
-            category: event.classifications[0].segment.name,
-            imageUrl: maxResImg.url || 'https://images.unsplash.com/photo-1672841821756-fc04525771c2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb25jZXJ0JTIwbXVzaWMlMjBmZXN0aXZhbCUyMGNyb3dkfGVufDF8fHx8MTc3Mzg2ODYyMXww&ixlib=rb-4.1.0&q=80&w=1080',
-            price: event.priceRanges ? `$${event.priceRanges[0].min}+` : "Ticketmaster",
-            attendees: [],
-            reviews: [],
-            createdBy: null,
-            url: event.url,
-            source: 'ticketmaster',
-          }
-        );
-      });
-
-      return newEvents;
-    } catch (error) {
-      console.error('Error fetching events:', error);
-      toast.error('Failed to load events. Please try again later.');
-      return [];
-    }
-  }
-
-  /**
-   * Fetch events from ticketmaster API from the Athens, GA area
-   * Fetch additional platform-specific events from our backend API (not implemented yet, just comment out basic prototype code for now)
-   * Fetch additional data if authenticated like friends attending, already attending, personalized recommendations, and events the user has created.
-   */
-  const fetchEvents = async () => {
-    fetchBackendEvents().then((backend_data) => {
-      fetchTicketmasterEvents().then((ticketmaster_data) => {
-
-        const tmDupeFilteredEvents = ticketmaster_data.filter((event) => {
-          return (
-            backend_data.find((backendEvent) => backendEvent.tmid === event.tmid) === undefined
-          )
-        });
-
-        setEvents([...backend_data, ...tmDupeFilteredEvents]);
-      });
-    });
   }
 
   /**
@@ -312,9 +237,25 @@ export default function EventsPage() {
   /**
    * Removes an event from the list
    */
-  const handleDeleteEvent = (id: string) => {
+  const handleDeleteEvent = async (id: string) => {
+
+    const response = await fetch(`/api/events/${id}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error Code ${response.status}: Failed to delete event from backend API: ${response.statusText}`);
+    }
+
+    const updatedEvents = events.filter((event) => event._id !== id);
+    setEvents(updatedEvents);
+    toast.success('Event deleted');
+
+
+    /*
     setEvents(events.filter((event) => event._id !== id));
     toast.success('Event deleted');
+    */
   };
 
   const handleAttendEvent = async (id: string) => {
