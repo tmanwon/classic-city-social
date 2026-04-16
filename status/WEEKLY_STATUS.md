@@ -10,7 +10,7 @@
 ## Group Selfie
 Upload image to `/images/` and link it below:
 
-`![Group Photo](../images/group-selfie.jpg)`
+![Group Photo](../images/group-selfie.jpg)
 
 ---
 ## Progress Summary - **Week #1:**  Monday, March 16th -  Sunday, March 22nd
