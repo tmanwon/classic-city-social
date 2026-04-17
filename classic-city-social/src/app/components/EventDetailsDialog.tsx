@@ -298,6 +298,13 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
     toast.success('Opening Google Calendar...');
   };
 
+  // get friends attending
+  const friendsAttending = useMemo(() => {
+    if (!isAuthenticated || !user) return [];
+    const userFriends = user.friends || [];
+    return event.attendees.filter((attendeeId) => userFriends.includes(attendeeId) && attendeeId !== user._id);
+  }, [event.attendees, isAuthenticated, user]);
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 md:p-8">
       <div
@@ -596,10 +603,19 @@ export function EventDetailsDialog({ event, onClose, onAddReview, onAttend }: Ev
                   <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                     <Users className="w-6 h-6 opacity-80" /> Event Buddies
                   </h3>
-                  <p className="font-medium mb-4" style={{ color: mutedTextColor }}>
-                    <span className="font-bold text-lg" style={{ color: textColor }}>{event.attendees.length}</span>{' '}
-                    {event.attendees.length === 1 ? 'person is' : 'people are'} attending this event
-                  </p>
+                  {friendsAttending.length > 0 ? (
+                      <p className="font-medium mb-4" style={{ color: mutedTextColor }}>
+                        You have{" "}
+                        <span className="font-bold text-lg" style={{ color: textColor }}>
+                          {friendsAttending.length}
+                        </span>{" "}
+                        {friendsAttending.length === 1 ? "friend" : "friends"} attending!
+                      </p>
+                    ) : (
+                      <p className="font-medium mb-4" style={{ color: mutedTextColor }}>
+                        No friends attending. 
+                      </p>  
+                    )}
                   {isAuthenticated && isAttending && (
                     <div className="px-4 py-3 rounded-xl bg-green-500/20 border border-green-500/30 text-green-700 font-semibold mb-2 shadow-inner">
                       You're attending! Connect with other attendees at the event.
