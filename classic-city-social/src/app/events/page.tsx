@@ -109,19 +109,16 @@ export default function EventsPage() {
       });
     }
 
-    // Personalization - sort events matching user's interests to the top
-    if (userInterests.length > 0 && isAuthenticated) {
-      filtered = filtered.sort((a, b) => {
-        const aMatch = userInterests.includes(a.category.toLowerCase());
-        const bMatch = userInterests.includes(b.category.toLowerCase());
-        if (aMatch && !bMatch) return -1;
-        if (!aMatch && bMatch) return 1;
-        return 0;
-      });
+    // Interest filter - show only events matching user's selected interests
+    // Works for both authenticated and non-authenticated users
+    if (userInterests.length > 0) {
+      filtered = filtered.filter((event) =>
+        userInterests.includes(event.category.toLowerCase())
+      );
     }
 
     setFilteredEvents(filtered);
-  }, [searchQuery, selectedCategory, distanceFilter, events, userLocation, userInterests, isAuthenticated]);
+  }, [searchQuery, selectedCategory, distanceFilter, events, userLocation, userInterests]);
 
   /**
    * FETCH EVENTS ON PAGE LOAD
@@ -571,24 +568,28 @@ export default function EventsPage() {
             </Button>
           </div>
 
-          {/* Interest-based personalization - user can toggle to prioritize certain event types */}
-          {isAuthenticated && (
-            <div>
-              <p className="text-sm text-gray-600 mb-2">Filter by your interests:</p>
-              <div className="flex flex-wrap gap-2">
-                {categories.filter(c => c !== 'All').map((category) => (
-                  <Badge
+          {/* Interest filter - toggle to filter events by category */}
+          <div>
+            <p className="text-sm text-gray-600 mb-2">Filter by your interests:</p>
+            <div className="flex flex-wrap gap-2">
+              {categories.filter(c => c !== 'All').map((category) => {
+                const isSelected = userInterests.includes(category.toLowerCase());
+                return (
+                  <button
                     key={category}
-                    variant={userInterests.includes(category.toLowerCase()) ? 'default' : 'outline'}
-                    className="cursor-pointer transition-all hover:scale-105"
                     onClick={() => handleToggleInterest(category.toLowerCase())}
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-all hover:scale-105 ${
+                      isSelected
+                        ? 'bg-yellow-500 text-black'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
                   >
                     {category}
-                  </Badge>
-                ))}
-              </div>
+                  </button>
+                );
+              })}
             </div>
-          )}
+          </div>
         </div>
 
         {/* Search results counter */}
