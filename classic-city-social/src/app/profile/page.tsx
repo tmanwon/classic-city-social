@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { uploadImage } from '../utils/cdn';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
@@ -19,6 +20,36 @@ export default function ProfilePage() {
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [editName, setEditName] = useState(user?.firstName + ' ' + user?.lastName || '');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageClick = () => fileInputRef.current?.click();
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = reader.result as string;
+      setUploadingImage(true);
+      try {
+        const url = await uploadImage(base64);
+        await fetch(`/api/users/${user?._id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageUrl: url }),
+        });
+        updateUserProfile({ imageUrl: url } as any);
+        toast.success('Profile picture updated!');
+      } catch {
+        toast.error('Failed to upload image');
+      } finally {
+        setUploadingImage(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Ensure user is authenticated to view this page
   useEffect(() => {
@@ -78,7 +109,14 @@ export default function ProfilePage() {
               <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-br from-red-500 to-yellow-500 z-0"></div>
 
               {/* Profile Image */}
-              <div className="relative z-10 mt-12 mb-4 group cursor-pointer">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageChange}
+              />
+              <div className="relative z-10 mt-12 mb-4 group cursor-pointer" onClick={handleImageClick}>
                 <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg bg-gray-200">
                   {user.imageUrl ? (
                     <Image src={user.imageUrl} alt={user.firstName + ' ' + user.lastName} width={128} height={128} className="w-full h-full object-cover" />
