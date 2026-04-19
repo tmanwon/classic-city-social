@@ -10,7 +10,7 @@
 ## Group Selfie
 Upload image to `/images/` and link it below:
 
-`![Group Photo](../images/group-selfie.jpg)`
+![Group Photo](../images/group-selfie.jpg)
 
 ---
 ## Progress Summary - **Week #1:**  Monday, March 16th -  Sunday, March 22nd
@@ -86,18 +86,19 @@ Upload image to `/images/` and link it below:
 ## Progress Summary - **Final Week:**  Monday, April 13th -  Sunday, April 19th
 
 ** What we completed this week:**  
-- 
--  
+- Began looking at the finishing touches and got the auth setup for login and signup. Also setup routes for unauthenticated users.
+-  Polished many features such as friends page and making sure the filters work right.
+-  Worked on a new branch 'auth' where the commits for this last week will go.
 
 ** Issues / blockers encountered:**  
 -  
 -  
 
 ** Video preparation plans:**  
--  
+-  We went through the rubric and made sure we had everything set to show off.
 -  
 ** Presentation preparation plans:**  
--  
+-  We will split up talking points and have a final meeting to discuss furthur details.
 -  
 ---
 
