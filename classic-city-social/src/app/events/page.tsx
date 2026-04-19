@@ -14,7 +14,7 @@ import {
   Map as MapIcon
 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useAuth } from '../context/AuthContext';
+import { useSession, signOut } from "next-auth/react";
 import { mockEvents, categories } from '../models/mockData';
 import { EventType, EventResponse } from '../models/eventSchema';
 import { Review, ReviewResponse, ReviewType } from '../models/reviewSchema';
@@ -40,7 +40,12 @@ import Image from 'next/image';
  */
 export default function EventsPage() {
   const router = useRouter();
-  const { user, isAuthenticated, logout, updateUserInterests, updateUserProfile } = useAuth();
+  const { data: session, status, update } = useSession();
+  const user = session?.user as any;
+  const isAuthenticated = status === 'authenticated';
+  const logout = () => signOut({ redirect: false });
+  const updateUserInterests = (interests: string[]) => update({ interests });
+  const updateUserProfile = (updates: any) => update(updates);
 
   // Event management state
   const [events, setEvents] = useState<EventResponse[]>([]);
@@ -104,19 +109,16 @@ export default function EventsPage() {
       });
     }
 
-    // Personalization - sort events matching user's interests to the top
-    if (userInterests.length > 0 && isAuthenticated) {
-      filtered = filtered.sort((a, b) => {
-        const aMatch = userInterests.includes(a.category.toLowerCase());
-        const bMatch = userInterests.includes(b.category.toLowerCase());
-        if (aMatch && !bMatch) return -1;
-        if (!aMatch && bMatch) return 1;
-        return 0;
-      });
+    // Interest filter - show only events matching user's selected interests
+    // Works for both authenticated and non-authenticated users
+    if (userInterests.length > 0) {
+      filtered = filtered.filter((event) =>
+        userInterests.includes(event.category.toLowerCase())
+      );
     }
 
     setFilteredEvents(filtered);
-  }, [searchQuery, selectedCategory, distanceFilter, events, userLocation, userInterests, isAuthenticated]);
+  }, [searchQuery, selectedCategory, distanceFilter, events, userLocation, userInterests]);
 
   /**
    * FETCH EVENTS ON PAGE LOAD
@@ -125,9 +127,12 @@ export default function EventsPage() {
     fetchEvents();
   }, []);
 
-
-  const fetchBackendEvents = async () => {
-    // Fetch events from our DB through our backend API
+  /**
+   * Fetch events from ticketmaster API from the Athens, GA area
+   * Fetch additional platform-specific events from our backend API (not implemented yet, just comment out basic prototype code for now)
+   * Fetch additional data if authenticated like friends attending, already attending, personalized recommendations, and events the user has created.
+   */
+  const fetchEvents = async () => {
     try {
       const response = await fetch('/api/events', {
         method: 'GET',
@@ -135,90 +140,12 @@ export default function EventsPage() {
       if (!response.ok) {
         throw new Error(`Error Code ${response.status}: Failed to fetch events from backend API: ${response.statusText}`);
       }
-      const backend_data: EventResponse[] = (await response.json()).events;
-
-
-      return backend_data;
-
+      const data = await response.json();
+      setEvents(data.events);
     } catch (error) {
       console.error('Error fetching events:', error);
       toast.error('Failed to load events. Please try again later.');
-      return [];
     }
-
-  }
-
-  const fetchTicketmasterEvents = async () => {
-    // Ticketmaster API fetch (example, not fully implemented)
-    try {
-      const response = await fetch(`https://app.ticketmaster.com/discovery/v2/events.json?city=Athens&stateCode=GA&size=60&sort=date,asc&apikey=${process.env.NEXT_PUBLIC_TICKETMASTER_API_KEY}`);
-      if (!response.ok) {
-        throw new Error(`Error Code ${response.status}: Failed to fetch events from Ticketmaster: ${response.statusText}`);
-      }
-      const ticketmaster_data = await response.json();
-      console.log('Ticketmaster Data:', ticketmaster_data);
-      console.log('Mapped Events:', ticketmaster_data._embedded.events);
-
-
-      // Get object from ticketmaster_data._embedded.events.images array with largest width and use its url for the event image
-
-      const newEvents: EventResponse[] = ticketmaster_data._embedded.events.map((event: any) => {
-        const maxResImg = event.images.reduce((prev: { width: number }, current: { width: number }) => {
-          return (prev.width > current.width) ? prev : current;
-        });
-
-        return (
-          {
-            _id: event.id,
-            tmid: event.id,
-            title: event.name,
-            description: event.description || "",
-            date: event.dates.start.localDate,
-            time: event.dates.start.localTime,
-            location: `${event._embedded.venues[0].address.line1}, ${event._embedded.venues[0].city.name}, ${event._embedded.venues[0].state.stateCode} ${event._embedded.venues[0].postalCode}`,
-            venue: `${event._embedded.venues[0].name}`,
-            coordinates: {
-              lat: event._embedded.venues[0].location.latitude,
-              lng: event._embedded.venues[0].location.longitude,
-            },
-            category: event.classifications[0].segment.name,
-            imageUrl: maxResImg.url || 'https://images.unsplash.com/photo-1672841821756-fc04525771c2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb25jZXJ0JTIwbXVzaWMlMjBmZXN0aXZhbCUyMGNyb3dkfGVufDF8fHx8MTc3Mzg2ODYyMXww&ixlib=rb-4.1.0&q=80&w=1080',
-            price: event.priceRanges ? `$${event.priceRanges[0].min}+` : "Ticketmaster",
-            attendees: [],
-            reviews: [],
-            createdBy: null,
-            url: event.url,
-            source: 'ticketmaster',
-          }
-        );
-      });
-
-      return newEvents;
-    } catch (error) {
-      console.error('Error fetching events:', error);
-      toast.error('Failed to load events. Please try again later.');
-      return [];
-    }
-  }
-
-  /**
-   * Fetch events from ticketmaster API from the Athens, GA area
-   * Fetch additional platform-specific events from our backend API (not implemented yet, just comment out basic prototype code for now)
-   * Fetch additional data if authenticated like friends attending, already attending, personalized recommendations, and events the user has created.
-   */
-  const fetchEvents = async () => {
-    fetchBackendEvents().then((backend_data) => {
-      fetchTicketmasterEvents().then((ticketmaster_data) => {
-
-        const tmDupeFilteredEvents = ticketmaster_data.filter((event) => {
-          return (
-            backend_data.find((backendEvent) => backendEvent.tmid === event.tmid) === undefined
-          )
-        });
-
-        setEvents([...backend_data, ...tmDupeFilteredEvents]);
-      });
-    });
   }
 
   /**
@@ -307,9 +234,25 @@ export default function EventsPage() {
   /**
    * Removes an event from the list
    */
-  const handleDeleteEvent = (id: string) => {
+  const handleDeleteEvent = async (id: string) => {
+
+    const response = await fetch(`/api/events/${id}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error Code ${response.status}: Failed to delete event from backend API: ${response.statusText}`);
+    }
+
+    const updatedEvents = events.filter((event) => event._id !== id);
+    setEvents(updatedEvents);
+    toast.success('Event deleted');
+
+
+    /*
     setEvents(events.filter((event) => event._id !== id));
     toast.success('Event deleted');
+    */
   };
 
   const handleAttendEvent = async (id: string) => {
@@ -404,7 +347,7 @@ export default function EventsPage() {
       setEvents(events.map(e => e._id === id ? updatedEvent : e));
 
       const newEventsAttending = isAttending
-        ? user.eventsAttending?.filter(eventId => eventId !== updatedEvent._id) || []
+        ? user.eventsAttending?.filter((eventId: string) => eventId !== updatedEvent._id) || []
         : [...(user.eventsAttending || []), updatedEvent._id];
       updateUserProfile({ eventsAttending: newEventsAttending });
 
@@ -625,24 +568,28 @@ export default function EventsPage() {
             </Button>
           </div>
 
-          {/* Interest-based personalization - user can toggle to prioritize certain event types */}
-          {isAuthenticated && (
-            <div>
-              <p className="text-sm text-gray-600 mb-2">Filter by your interests:</p>
-              <div className="flex flex-wrap gap-2">
-                {categories.filter(c => c !== 'All').map((category) => (
-                  <Badge
+          {/* Interest filter - toggle to filter events by category */}
+          <div>
+            <p className="text-sm text-gray-600 mb-2">Filter by your interests:</p>
+            <div className="flex flex-wrap gap-2">
+              {categories.filter(c => c !== 'All').map((category) => {
+                const isSelected = userInterests.includes(category.toLowerCase());
+                return (
+                  <button
                     key={category}
-                    variant={userInterests.includes(category.toLowerCase()) ? 'default' : 'outline'}
-                    className="cursor-pointer transition-all hover:scale-105"
                     onClick={() => handleToggleInterest(category.toLowerCase())}
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-all hover:scale-105 ${
+                      isSelected
+                        ? 'bg-yellow-500 text-black'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
                   >
                     {category}
-                  </Badge>
-                ))}
-              </div>
+                  </button>
+                );
+              })}
             </div>
-          )}
+          </div>
         </div>
 
         {/* Search results counter */}

@@ -13,7 +13,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useAuth } from '../context/AuthContext';
+import { useSession, signOut } from "next-auth/react";
 import { UserResponse } from '../models/userSchema';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -55,7 +55,11 @@ function FriendRow({
  */
 export default function FriendsPage() {
   const router = useRouter();
-  const { user, logout, isAuthenticated, updateUserProfile } = useAuth();
+  const { data: session, status, update } = useSession();
+  const user = session?.user as any;
+  const isAuthenticated = status === 'authenticated';
+  const logout = () => signOut({ redirect: false });
+  const updateUserProfile = (updates: any) => update(updates);
   const updateUserProfileRef = useRef(updateUserProfile);
 
   // Backing data for the directory, the current signed-in user, and page-level UI states.
@@ -65,13 +69,6 @@ export default function FriendsPage() {
   const [pageLoading, setPageLoading] = useState(true);
   const [pageError, setPageError] = useState<string | null>(null);
   const [addingFriendId, setAddingFriendId] = useState<string | null>(null);
-
-  // Protects the page by redirecting unauthenticated visitors to the login screen.
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login');
-    }
-  }, [isAuthenticated, router]);
 
   // Mirrors the auth-context user into local state so the page can react to auth changes.
   useEffect(() => {
@@ -148,7 +145,7 @@ export default function FriendsPage() {
 
     return allUsers
       .filter((candidate) => candidate._id !== currentUser._id && !currentFriendSet.has(candidate._id)) // Exclude self and existing friends from suggestions.
-      .map((candidate) => { 
+      .map((candidate) => {
         const candidateFriendIds = candidate.friends ?? [];
         const mutualFriendIds = candidateFriendIds.filter((friendId) => currentFriendSet.has(friendId)); // compare candidate's friends against current user's friends to find mutuals
 
@@ -264,8 +261,8 @@ export default function FriendsPage() {
     setAddingFriendId(friendToRemove._id);
 
     try {
-        // Create a new array of friend ids that excludes the friend to remove by filtering them out of the existing friends array
-        const updatedFriends = (currentUser.friends ?? []).filter(
+      // Create a new array of friend ids that excludes the friend to remove by filtering them out of the existing friends array
+      const updatedFriends = (currentUser.friends ?? []).filter(
         (friendId) => friendId !== friendToRemove._id
       );
       // Send a PUT request to update the user's friends list in the database with the new array of friend ids that no longer includes the removed friend

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { uploadImage } from '../utils/cdn';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
-import { useAuth } from '../context/AuthContext';
+import { useSession } from "next-auth/react";
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { mockEvents } from '../models/mockData';
@@ -13,13 +13,27 @@ import { EventCard } from '../components/EventCardNew';
 import { Camera, Settings, Activity, MapPin, Edit3, ArrowLeft, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import Image from 'next/image';
+import { EventResponse } from '../models/eventSchema';
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from '../components/ui/accordion';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, isAuthenticated, updateUserProfile } = useAuth();
+  const { data: session, status, update } = useSession();
+  const user = session?.user as any;
+  const isAuthenticated = status === 'authenticated';
+  const updateUserProfile = (updates: any) => update(updates);
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [editName, setEditName] = useState(user?.firstName + ' ' + user?.lastName || '');
+  // Mock friends activities
+  const [attendingEvents, setAttendingEvents] = useState<EventResponse[]>([]);
+  const [pastEvents, setPastEvents] = useState<EventResponse[]>([]);
+  const [loadingEvents, setLoadingEvents] = useState(true);
   const [uploadingImage, setUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -52,16 +66,60 @@ export default function ProfilePage() {
   };
 
   // Ensure user is authenticated to view this page
+  /*
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (status === 'unauthenticated') {
       router.push('/login');
     }
-  }, [isAuthenticated, router]);
+  }, [status, router]);
+  */
+
+  // Fetch users events
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchUserEvents = async () => {
+      try {
+        const response = await fetch('/api/events');
+        if (!response.ok) throw new Error('Failed to fetch events');
+
+        const data = await response.json();
+        const allEvents: EventResponse[] = data.events;
+
+        const userEvents = allEvents.filter(e => e.attendees?.includes(user._id));
+
+        const now = new Date();
+        const future: EventResponse[] = [];
+        const past: EventResponse[] = [];
+
+        userEvents.forEach(e => {
+          // Attempt to parse datetime, assume time is 00:00:00 if not provided
+          const eventDate = new Date(`${e.date}T${e.time || '00:00:00'}`);
+          if (eventDate >= now) {
+            future.push(e);
+          } else {
+            past.push(e);
+          }
+        });
+
+        // Sort future events ascending (soonest first)
+        future.sort((a, b) => new Date(`${a.date}T${a.time || '00:00:00'}`).getTime() - new Date(`${b.date}T${b.time || '00:00:00'}`).getTime());
+        // Sort past events descending (most recent first)
+        past.sort((a, b) => new Date(`${b.date}T${b.time || '00:00:00'}`).getTime() - new Date(`${a.date}T${a.time || '00:00:00'}`).getTime());
+
+        setAttendingEvents(future);
+        setPastEvents(past);
+      } catch (err) {
+        console.error('Error fetching user events:', err);
+      } finally {
+        setLoadingEvents(false);
+      }
+    };
+
+    fetchUserEvents();
+  }, [user]);
 
   if (!user) return null;
-
-  // Mock past events (just selecting a few events the user "attended" or mock ones)
-  const pastEvents = mockEvents.slice(0, 3);
 
   // Mock friends activities
   const friendActivities = [
@@ -163,11 +221,11 @@ export default function ProfilePage() {
               {/* Stats */}
               <div className="w-full grid grid-cols-2 gap-4 border-t border-gray-100 pt-6 z-10">
                 <div>
-                  <div className="text-2xl font-bold text-gray-900">12</div>
+                  <div className="text-2xl font-bold text-gray-900">{user.myEvents.length}</div>
                   <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Events</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-gray-900">45</div>
+                  <div className="text-2xl font-bold text-gray-900">{user.friends.length}</div>
                   <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Friends</div>
                 </div>
               </div>
@@ -205,31 +263,73 @@ export default function ProfilePage() {
             </motion.div>
           </div>
 
-          {/* Right Column - Past Attended Events */}
+          {/* Right Column - Events Sections */}
           <div className="lg:col-span-2 space-y-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 h-full"
+              className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 min-h-full"
             >
-              <h3 className="font-bold text-xl text-gray-900 mb-6 flex items-center gap-2">
-                <Activity className="w-6 h-6 text-red-500" />
-                Past Attended Events
-              </h3>
+              <Accordion type="multiple" defaultValue={['attending', 'past']} className="w-full space-y-6">
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {pastEvents.map((event) => (
-                  <div key={`profile-event-${event._id}`} className="h-[400px]">
-                    {/* We reuse the improved EventCard here! */}
-                    <EventCard
-                      event={event}
-                      onViewDetails={() => router.push('/events')}
-                    />
-                  </div>
-                ))}
-              </div>
+                {/* Attending Events Section */}
+                <AccordionItem value="attending" className="border-none">
+                  <AccordionTrigger className="hover:no-underline py-4 mb-4 rounded-xl px-4 bg-gray-50 items-center data-[state=open]:text-blue-600 transition-colors">
+                    <div className="flex items-center gap-2 font-bold text-xl text-gray-900">
+                      <Activity className="w-6 h-6 text-blue-500" />
+                      Attending Events
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-1">
+                    {loadingEvents ? (
+                      <div className="text-gray-500 text-center py-8">Loading events...</div>
+                    ) : attendingEvents.length === 0 ? (
+                      <div className="text-gray-500 text-center py-8 bg-gray-50 rounded-2xl">You are not attending any upcoming events.</div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-2">
+                        {attendingEvents.map((event) => (
+                          <div key={`profile-event-attending-${event._id}`} className="h-full">
+                            <EventCard
+                              event={event}
+                              onViewDetails={() => router.push('/events')}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
 
+                {/* Past Attended Events Section */}
+                <AccordionItem value="past" className="border-none">
+                  <AccordionTrigger className="hover:no-underline py-4 mb-4 rounded-xl px-4 bg-gray-50 items-center data-[state=open]:text-red-500 transition-colors">
+                    <div className="flex items-center gap-2 font-bold text-xl text-gray-900">
+                      <Activity className="w-6 h-6 text-red-500" />
+                      Past Attended Events
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-1">
+                    {loadingEvents ? (
+                      <div className="text-gray-500 text-center py-8">Loading events...</div>
+                    ) : pastEvents.length === 0 ? (
+                      <div className="text-gray-500 text-center py-8 bg-gray-50 rounded-2xl">You have no past attended events.</div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-2">
+                        {pastEvents.map((event) => (
+                          <div key={`profile-event-past-${event._id}`} className="h-full">
+                            <EventCard
+                              event={event}
+                              onViewDetails={() => router.push('/events')}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+
+              </Accordion>
             </motion.div>
           </div>
 
