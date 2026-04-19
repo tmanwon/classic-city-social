@@ -31,11 +31,94 @@ Our team collaboratively designed, developed, and deployed this full-stack web a
 ## Repository Structure
 
 ```
-│── {project-name}
+│── {classic-city-social}
 │   └── src
 │       └── app - App Router pages & API routes
-│            └──   components → list components
-│            └──   models → Mongoose schemas / MongoDB models
+            └── api
+                └── auth
+                    └── [...nextauth]
+                        └── route.ts
+        
+                └── events
+                    ├── route.ts
+                    └── [id]
+                        └── route.ts
+        
+                └── imageUrl
+                    └── route.ts
+        
+                └── reviews
+                    ├── route.ts
+                    └── [id]
+                        └── route.ts
+        
+                └── summarize-reviews
+                    └── route.ts
+        
+                └── users
+                    ├── route.ts
+                    └── [id]
+                        └── route.ts
+             
+            └── components
+                └── figma
+                    └── ImageWithFallback.tsx
+        
+                └── ui
+                    └── ui - accordion.tsx, alert-dialog.tsx, alert.tsx, aspect-ratio.tsx,
+                              avatar.tsx, badge.tsx, breadcrumb.tsx, button.tsx, calendar.tsx,
+                              card.tsx, carousel.tsx, chart.tsx, checkbox.tsx, collapsible.tsx,
+                              command.tsx, content-menu.tsx, dialog.tsx, drawer.tsx,
+                              dropdown-menu.tsx, form.tsx, hover-card.tsx, input-otp.tsx,
+                              input.tsx, label.tsx, menubar.tsx, navigation-menu.tsx,
+                              pagination.tsx, popover.tsx, progress.tsx, radio-group.tsx,
+                              resizable.tsx, scroll-area.tsx, select.tsx, separator.tsx,
+                              sheet.tsx, sidebar.tsx, skeleton.tsx, slider.tsx, sonner.tsx,
+                              switch.tsx, table.tsx, tabs.tsx, textarea.tsx, toggle-group.tsx,
+                              toggle.tsx, tooltip.tsx, use-mobile.ts, utils.ts
+        
+                └── EventCard.tsx
+                └── EventCardNew.tsx
+                └── EventDetailsDialog.tsx
+                └── EventForm.tsx
+                └── ImageCropper.tsx
+                └── MapComponent.tsx
+                └── MapSlideOver.tsx
+                └── MiniMapComponent.tsx
+            
+            
+            └── events
+                └── page.tsx
+        
+            └── friends
+                └── page.tsx
+        
+            └── login
+                └── page.tsx
+
+            └── models
+                └── eventSchema.ts
+                └── mockData.ts
+                └── reviewSchema.ts
+                └── userSchema.ts
+        
+            └── profile
+                └── page.tsx
+        
+            └── services
+                └── api.ts
+        
+            └── signup
+                └── page.tsx
+        
+            └── utils
+                └── cdn.ts
+            
+            ├── favicon.ico
+            ├── globals.css
+            ├── layout.tsx
+            ├── not-found.tsx
+            └── page.tsx
 │── design - mockups.md 
 │── images - mockup images, etc.
 └── status - WEEKLY_STATUS.md
