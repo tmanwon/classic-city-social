@@ -154,6 +154,14 @@ Our project is called ClassicCitySocial. It is a hub for discovering events in A
 
 ## Run the development server
 
+Make sure you are in the `classic-city-social` directory:
+
+```
+cd classic-city-social
+```
+
+Then run the following command:
+
 ```
 npm run dev
 ```
