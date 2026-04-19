@@ -77,23 +77,67 @@ The project should now be running at:
 | ...         | ...                  | ... 
 | ...         | ...                  | ...                    |
 
-## Database Models (example)
-User
-| Field    | Type   | Description     |
-| -------- | ------ | --------------- |
-| name     | String | Full name       |
-| email    | String | Unique email    |
-| role     | String | admin/user/etc. |
-| password | String | Hashed password |
+## Database Models
 
-## Client Routes (example)
-| Route         | Description       |
-| ------------- | ----------------- |
-| `/`           | Homepage          |
-| `/login`      | User login        |
-| `/dashboard`  | User dashboard    |
-| `/items`      | List of items     |
-| `/items/[id]` | View details page |
+### User
+| Field           | Type        | Description               |
+|-----------------|------------|---------------------------|
+| firstName       | String     | User’s first name         |
+| lastName        | String     | User’s last name          |
+| email           | String     | Unique email              |
+| password        | String     | Hashed password           |
+| friends         | String[]   | Friend user IDs           |
+| imageUrl        | String/null| Profile image URL         |
+| interests       | String[]   | User interests            |
+| myEvents        | String[]   | Events created by user    |
+| eventsAttending | String[]   | Events user is attending  |
+
+### Event
+| Field               | Type        | Description                         |
+|---------------------|------------|-------------------------------------|
+| title               | String     | Event title                         |
+| tmid                | String/null| Ticketmaster ID                     |
+| description         | String     | Event description                   |
+| date                | String     | Event date                          |
+| time                | String     | Event time                          |
+| location            | String     | Event location                      |
+| coordinates         | Object     | Latitude & longitude                |
+| category            | String     | Event category                      |
+| imageUrl            | String     | Event image URL                     |
+| venue               | String     | Venue name                          |
+| price               | String     | Ticket price                        |
+| attendees           | String[]   | Attending user IDs                  |
+| reviews             | String[]   | Review IDs                          |
+| createdBy           | String     | Creator user ID                     |
+| url                 | String/null| External link                       |
+| source              | String     | Event source                        |
+| aiSummary           | String/null| AI-generated summary                |
+| aiSummaryUpdatedAt  | String/null| Last AI update                      |
+
+### Review
+| Field     | Type   | Description                          |
+|-----------|--------|--------------------------------------|
+| eventId   | String | Event ID                             |
+| userId    | String | User ID                              |
+| userName  | String | Reviewer name                        |
+| rating    | Number | Rating (1–5)                         |
+| comment   | String | Review text                          |
+| sentiment | String | positive / neutral / negative        |
+| createdAt | String | Timestamp                            |
+
+---
+
+## Client Routes
+
+| Route          | Description           |
+|----------------|-----------------------|
+| `/`            | Homepage              |
+| `/events`      | Browse events         |
+| `/events/[id]` | Event details         |
+| `/friends`     | Friends page          |
+| `/login`       | User login            |
+| `/signup`      | User registration     |
+| `/profile`     | User profile          |
 
 ## Future Improvements
 - what would you like to do next?
