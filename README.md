@@ -12,6 +12,8 @@ Our project is called ClassicCitySocial. It is a hub for discovering events in A
 
 ## Our Team - Athens Event Finders 
 
+![Group Photo](images/group-selfie.jpg)
+
 | Member Name      | GitHub Username      | Role                |
 |------------------|----------------------|---------------------|
 | Justin Alexander | justin-t-alexander   | Project Leader      |
