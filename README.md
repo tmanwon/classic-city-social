@@ -65,17 +65,28 @@ npm run dev
 The project should now be running at:
     http://localhost:3000
 
-## API Endpoints (Examples – update as you build)
+## API Endpoints
 
-| Method      | Endpoint             | Description            |
-| ----------- | -------------------- | ---------------------- |
-| GET         | /api/items           | Fetch all items        |
-| POST        | /api/items           | Create a new item      |
-| GET         | /api/items/[id]      | Get item by ID         |
-| PUT         | /api/items/[id]      | Update item by ID      |
-| DELETE      | /api/items/[id]      | Delete item by ID 
-| ...         | ...                  | ... 
-| ...         | ...                  | ...                    |
+| Method      | Endpoint                    | Description                                         |
+| ----------- | --------------------------- | --------------------------------------------------- |
+| GET/POST    | /api/auth/*                 | NextAuth authentication routes                      |
+| GET         | /api/events                 | Fetch all events (from DB and Ticketmaster via API) |
+| POST        | /api/events                 | Create a new event                                  |
+| GET         | /api/events/[id]            | Get event by ID                                     |
+| PUT         | /api/events/[id]            | Update event by ID                                  |
+| DELETE      | /api/events/[id]            | Delete event by ID                                  |
+| POST        | /api/imageUrl               | Upload image to ImgBB and return hosted URL         |
+| GET         | /api/reviews                | Fetch all reviews (can filter with `?eventId=...`)  |
+| POST        | /api/reviews                | Create a new review                                 |
+| GET         | /api/reviews/[id]           | Get review by ID                                    |
+| PUT         | /api/reviews/[id]           | Update review by ID                                 |
+| DELETE      | /api/reviews/[id]           | Delete review by ID                                 |
+| POST        | /api/summarize-reviews      | Generate an AI summary of an event's reviews        |
+| GET         | /api/users                  | Fetch all users                                     |
+| POST        | /api/users                  | Create a new user (Signup) or authenticate (Login)  |
+| GET         | /api/users/[id]             | Get user by ID                                      |
+| PUT         | /api/users/[id]             | Update user profile by ID                           |
+| DELETE      | /api/users/[id]             | Delete user account by ID                           |
 
 ## Database Models
 
