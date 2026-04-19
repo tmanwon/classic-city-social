@@ -39,7 +39,6 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     setErrorMessage('');
     try {
       if (password.length >= 6 && email.includes('@')) {
@@ -63,6 +62,7 @@ export default function SignupPage() {
         });
 
         const data = await response.json();
+
 
         if (!response.ok) {
           throw new Error(data.error || response.statusText);

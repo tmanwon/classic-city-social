@@ -8,6 +8,10 @@ export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
     if (pathname.startsWith("/friends") || pathname.startsWith("/profile") || pathname.startsWith("/api/users")) {
+        if (request.method === "POST") {
+            return NextResponse.next();
+        }
+
         const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
 
         if (!token) {
