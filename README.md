@@ -147,7 +147,7 @@ Our project is called ClassicCitySocial. It is a hub for discovering events in A
 | Backend           | Next.js API Routes / Node.js                 |
 | Database          | MongoDB + Mongoose                           |
 | Styling           | Tailwind CSS                                 |
-| Authentication    | NextAuth.js, bcrypt (hasing), JWT            |
+| Authentication    | NextAuth.js, bcrypt (hashing), JWT           |
 | External APIs     | Ticketmaster API, ImgBB API, OpenAI API      |
 
 ---
