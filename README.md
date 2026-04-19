@@ -51,8 +51,8 @@ Our team collaboratively designed, developed, and deployed this full-stack web a
 | Frontend          | React + Next.js (App Router)                 |
 | Backend           | Next.js API Routes / Node.js                 |
 | Database          | MongoDB + Mongoose                           |
-| Styling           | Tailwind CSS ?? / Custom CSS Modules ??      |
-| Authentication    | NextAuth.js                                  |
+| Styling           | Tailwind CSS                                 |
+| Authentication    | NextAuth.js, bcrypt (hasing), JWT            |
 
 ---
 
