@@ -6,6 +6,8 @@
 This repository represents the culminating project for CSCI 4300 – Web Programming at UGA.  
 Our team collaboratively designed, developed, and deployed this full-stack web application using React + Next.js, Node.js and MongoDB. 
 
+Our project is called ClassicCitySocial. It is a hub for events in Athens, where you can browse all kinds of events, create your own, and connect with friends. 
+
 ---
 
 ## Our Team - Athens Event Finders 
@@ -23,8 +25,12 @@ Our team collaboratively designed, developed, and deployed this full-stack web a
 
 - Authentication & Authorization** (login/sign-up, protected routes)  
 - Middleware or Route Protection** for authenticated users  
-- CRUD operations** using a database or API  
-- Responsive UI** & dynamic navigation bar  
+- CRUD operations** for users, events, and reviews using a database or API  
+- Responsive UI** & dynamic navigation bar
+- Friends page including mutual friends
+- Profile page
+- Surpise Me feature, generating a random event
+- Geolocation filtering
 
 ---
 
