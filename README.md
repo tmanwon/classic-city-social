@@ -147,7 +147,7 @@ Our project is called ClassicCitySocial. It is a hub for discovering events in A
 | Backend           | Next.js API Routes / Node.js                 |
 | Database          | MongoDB + Mongoose                           |
 | Styling           | Tailwind CSS                                 |
-| Authentication    | NextAuth.js, bcrypt (hasing), JWT            |
+| Authentication    | NextAuth.js, bcrypt (hashing), JWT           |
 | External APIs     | Ticketmaster API, ImgBB API, OpenAI API      |
 
 ---
@@ -260,6 +260,29 @@ The project should now be running at:
 - Add dynamic routes for viewing other users' profiles
 - Add lazy loading of events to optimize performance
 - Fix latitude and longitude values of events provided by the Ticketmaster API to be replaced with more accurate values
+
+
+## Accomplishments and Challenges
+- Accomplishments:
+  - Collaborated with a group to build a full stack project
+  - Managed time effectively and split work among the group every week
+  - Successfully and effectively used several external APIs to achieve our vision for what a comprehensive social events platform looks like
+- Challenges:
+  - Handling schema differences between events given by ticketmaster API and our event schema in our database
+  - Deciding on how to handle adding Ticketmaster events to the database. We did not want to add every event from the API to the database, but needed social features to work with Ticketmaster API events.
+  - Ensuring all group members were in sync on the same working branch
+  - Rewriting our former Authentication solution to use the current NextAuth.js and JWT solution required by the project instructions, in less than a week!
+  - Constant revisions as a group of our schemas for users, events, and reviews
+  - Resolving merge conflicts between commits
+- How We Overcame Obstacles:
+  - Resolved schema differences between Ticketmaster API events and our DB events, by creating a universal events schema that unifies the data discrepancies between both sources
+  - Decided to only add Ticketmaster API events to our MongoDB database once a Ticketmaster API event has been interacted with by a user 
+  - Held weekly meetings to divide work and decide what branch everyone should work on
+  - Held an emergency group meeting to completely rewrite our Authentication code to use NextAuth.js, JWT, and bcrypt hashing.
+  - Revisions made by a group member to any of the schemas were immediately made known to the rest of the group via Discord and immediately resolved by the rest of the group’s local repositories
+  - We don’t talk about the journey that was resolving merge conflicts between commits (gives us PTSD), we’re just happy about the destination
+ 
+![hippo](https://media1.tenor.com/m/UDKB4xaeXfAAAAAd/vince-carter-vince-carter-come-on.gif)
 
 ## Acknowledgements
 - Thanks to the Ticketmaster API for providing valuable local event data
